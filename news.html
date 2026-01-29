@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회소식 | 온새미로교회</title>
+    <link rel="icon" type="image/svg+xml" href="./chicon.svg">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#2d5a27',
+                        'brand-light': '#e8f0e6',
+                        'brand-accent': '#8bc34a',
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Apple SD Gothic Neo', 'sans-serif'],
+                        serif: ['Noto Serif KR', 'Georgia', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', sans-serif; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #2d5a27; border-radius: 4px; }
+        
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        
+        .spinner {
+            border: 3px solid #e8f0e6;
+            border-top: 3px solid #2d5a27;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .category-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+        .category-공지 { background: #fee2e2; color: #dc2626; }
+        .category-안내 { background: #dbeafe; color: #2563eb; }
+        .category-행사 { background: #d1fae5; color: #059669; }
+        .category-기타 { background: #f3f4f6; color: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="./index.html" class="flex items-center gap-3 group">
+                    <img src="./logo_onsaech.svg" alt="온새미로교회 로고" class="h-14 w-auto transition-transform duration-300 group-hover:scale-105">
+                </a>
+                
+                <div class="hidden md:flex space-x-1 items-center">
+                    <a href="./index.html#about" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">교회소개</a>
+                    <a href="./index.html#worship" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배안내</a>
+                    <a href="./index.html#sermon" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배실황</a>
+                    <a href="./news.html" class="nav-link px-4 py-2 rounded-full bg-brand-light text-brand-green font-medium transition-all duration-300">교회소식</a>
+                    <a href="./gallery.html" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">갤러리</a>
+                    <a href="./index.html#newcomer" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">새가족 안내</a>
+                    <a href="./index.html#location" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">오시는 길</a>
+                </div>
+                
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobileMenuBackdrop"></div>
+        <div class="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300" id="mobileMenuPanel">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-8">
+                    <span class="text-lg font-bold text-gray-900">메뉴</span>
+                    <button id="mobileMenuClose" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <a href="./index.html#about" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="church" class="w-5 h-5"></i><span class="font-medium">교회소개</span>
+                    </a>
+                    <a href="./index.html#worship" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="book-open" class="w-5 h-5"></i><span class="font-medium">예배안내</span>
+                    </a>
+                    <a href="./index.html#sermon" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="video" class="w-5 h-5"></i><span class="font-medium">예배실황</span>
+                    </a>
+                    <a href="./news.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl bg-brand-light text-brand-green transition-all duration-300">
+                        <i data-lucide="newspaper" class="w-5 h-5"></i><span class="font-medium">교회소식</span>
+                    </a>
+                    <a href="./gallery.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="images" class="w-5 h-5"></i><span class="font-medium">갤러리</span>
+                    </a>
+                    <a href="./index.html#newcomer" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i><span class="font-medium">새가족 안내</span>
+                    </a>
+                    <a href="./index.html#location" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i><span class="font-medium">오시는 길</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <section class="pt-32 pb-16 bg-gradient-to-br from-brand-green to-brand-green/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-white">
+                <div class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full mb-6" data-aos="fade-up">
+                    <i data-lucide="newspaper" class="w-4 h-4"></i>
+                    <span class="text-sm font-medium tracking-wide">News & Notice</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4" data-aos="fade-up" data-aos-delay="100">교회 소식</h1>
+                <p class="text-lg text-white/80 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">온새미로교회의 다양한 소식을 전해드려요</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Toggle Button -->
+    <button id="adminToggle" class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-300 opacity-50 hover:opacity-100">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+    </button>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-2 border-brand-green">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-brand-green rounded-xl flex items-center justify-center">
+                    <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">새 소식 추가</h2>
+            </div>
+            
+            <form id="uploadForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-2">제목 *</label>
+                            <input type="text" id="postTitle" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="postCategory" class="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                                <select id="postCategory" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                                    <option value="공지">공지</option>
+                                    <option value="안내">안내</option>
+                                    <option value="행사">행사</option>
+                                    <option value="기타">기타</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="postDate" class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                                <input type="date" id="postDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">대표 이미지 (선택)</label>
+                            <input type="file" id="postImage" accept="image/*" class="hidden">
+                            <label for="postImage" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-green hover:bg-brand-light/30 transition-all">
+                                <div id="postImagePreview" class="hidden w-full h-full rounded-xl overflow-hidden mb-2">
+                                    <img id="postImagePreviewImg" src="" alt="미리보기" class="w-full h-full object-cover">
+                                </div>
+                                <div id="postImagePlaceholder" class="text-center py-4">
+                                    <i data-lucide="image-plus" class="w-8 h-8 text-gray-400 mx-auto mb-1"></i>
+                                    <p class="text-sm text-gray-500">클릭하여 사진 첨부</p>
+                                </div>
+                            </label>
+                        </div>
+                        <div>
+                            <label for="postDescription" class="block text-sm font-medium text-gray-700 mb-2">요약</label>
+                            <textarea id="postDescription" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none" placeholder="메인 페이지에 표시될 짧은 설명"></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="postContent" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                        <textarea id="postContent" rows="8" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none" placeholder="상세 내용을 입력하세요"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="clearForm" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">초기화</button>
+                    <button type="submit" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="check" class="w-5 h-5"></i>소식 추가
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- News Grid -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
+        <!-- Category Filter -->
+        <div class="flex flex-wrap gap-3 mb-8" data-aos="fade-up">
+            <button class="category-btn active px-5 py-2 rounded-full bg-brand-green text-white font-medium transition-all" data-category="all">전체</button>
+            <button class="category-btn px-5 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-brand-light hover:text-brand-green font-medium transition-all" data-category="공지">공지</button>
+            <button class="category-btn px-5 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-brand-light hover:text-brand-green font-medium transition-all" data-category="안내">안내</button>
+            <button class="category-btn px-5 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-brand-light hover:text-brand-green font-medium transition-all" data-category="행사">행사</button>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+            <div class="spinner mb-4"></div>
+            <p class="text-gray-600">소식을 불러오는 중...</p>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="newspaper" class="w-12 h-12 text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">아직 소식이 없습니다</h3>
+            <p class="text-gray-600">관리자 모드에서 첫 번째 소식을 추가해보세요!</p>
+        </div>
+        
+        <!-- News Items -->
+        <div id="newsGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="detailBackdrop"></div>
+        <div class="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <button id="detailClose" class="absolute top-4 right-4 z-10 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-700"></i>
+            </button>
+            
+            <div class="p-8">
+                <div id="detailImageWrap" class="hidden mb-6 rounded-xl overflow-hidden">
+                    <img id="detailImage" src="" alt="" class="w-full max-h-80 object-cover">
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span id="detailCategory" class="category-badge"></span>
+                    <span id="detailDate" class="text-sm text-gray-500"></span>
+                </div>
+                <h2 id="detailTitle" class="text-2xl md:text-3xl font-bold text-gray-900 mb-6"></h2>
+                <div id="detailContent" class="prose prose-green max-w-none text-gray-600 whitespace-pre-wrap"></div>
+                
+                <div id="adminButtons" class="hidden mt-8 pt-6 border-t flex gap-2">
+                    <button id="detailEdit" class="px-4 py-2 bg-brand-green hover:bg-brand-green/90 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>수정
+                    </button>
+                    <button id="detailDelete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="editBackdrop"></div>
+        <div class="relative max-w-lg w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">소식 수정</h3>
+                    <button id="editClose" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+                
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editPostId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">제목</label>
+                        <input type="text" id="editTitle" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                            <select id="editCategory" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                                <option value="공지">공지</option>
+                                <option value="안내">안내</option>
+                                <option value="행사">행사</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                            <input type="date" id="editDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">요약</label>
+                        <textarea id="editDescription" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">대표 이미지 (선택)</label>
+                        <input type="file" id="editImage" accept="image/*" class="hidden">
+                        <div id="editImageCurrent" class="hidden mb-3 rounded-xl overflow-hidden border border-gray-200">
+                            <img id="editImageCurrentImg" src="" alt="현재 이미지" class="w-full h-32 object-cover">
+                            <p class="text-xs text-gray-500 mt-1 px-2">현재 이미지 (아래 버튼으로 새 이미지 선택 시 교체)</p>
+                        </div>
+                        <label for="editImage" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-brand-light border-2 border-brand-green/30 rounded-xl cursor-pointer hover:bg-brand-green/10 transition-all text-brand-green font-medium">
+                            <i data-lucide="image-plus" class="w-5 h-5"></i>
+                            <span id="editImageButtonText">이미지 선택 / 교체</span>
+                        </label>
+                        <div id="editImagePreview" class="hidden mt-2 rounded-xl overflow-hidden border border-gray-200">
+                            <img id="editImagePreviewImg" src="" alt="미리보기" class="w-full h-32 object-cover">
+                            <p class="text-xs text-gray-500 mt-1 px-2">선택한 이미지 (저장 시 적용)</p>
+                        </div>
+                        <div id="editImagePlaceholder" class="hidden"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                        <textarea id="editContent" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" id="editCancel" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">취소</button>
+                        <button type="submit" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5"></i>저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <img src="./logo_onsaech_white.svg" alt="온새미로교회" class="h-10">
+                    <span class="text-gray-400">© 2026 온새미로교회. All rights reserved.</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors">
+                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <i data-lucide="youtube" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const ADMIN_PASSWORD = '1111';
+
+        // Initialize
+        lucide.createIcons();
+        AOS.init({ duration: 800, once: true, offset: 50 });
+
+        // Mobile Menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('hidden');
+            setTimeout(() => mobileMenuPanel.classList.remove('translate-x-full'), 10);
+        });
+        
+        function closeMobileMenu() {
+            mobileMenuPanel.classList.add('translate-x-full');
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+        
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+
+        // Admin Mode
+        const adminToggle = document.getElementById('adminToggle');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminButtons = document.getElementById('adminButtons');
+        let isAdminMode = false;
+
+        adminToggle.addEventListener('click', () => {
+            if (!isAdminMode) {
+                const password = prompt('관리자 비밀번호를 입력하세요:');
+                if (password !== ADMIN_PASSWORD) {
+                    if (password !== null) alert('비밀번호가 올바르지 않습니다.');
+                    return;
+                }
+            }
+            isAdminMode = !isAdminMode;
+            adminPanel.classList.toggle('hidden');
+            adminToggle.innerHTML = isAdminMode ? '<i data-lucide="x" class="w-5 h-5"></i>' : '<i data-lucide="settings" class="w-5 h-5"></i>';
+            if (isAdminMode) adminButtons.classList.remove('hidden');
+            else adminButtons.classList.add('hidden');
+            lucide.createIcons();
+        });
+
+        // Form
+        const uploadForm = document.getElementById('uploadForm');
+        const postTitle = document.getElementById('postTitle');
+        const postCategory = document.getElementById('postCategory');
+        const postDate = document.getElementById('postDate');
+        const postDescription = document.getElementById('postDescription');
+        const postContent = document.getElementById('postContent');
+        const postImage = document.getElementById('postImage');
+        const postImagePreview = document.getElementById('postImagePreview');
+        const postImagePreviewImg = document.getElementById('postImagePreviewImg');
+        const postImagePlaceholder = document.getElementById('postImagePlaceholder');
+        const clearFormBtn = document.getElementById('clearForm');
+
+        postDate.valueAsDate = new Date();
+
+        postImage.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    postImagePreviewImg.src = ev.target.result;
+                    postImagePlaceholder.classList.add('hidden');
+                    postImagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                postImagePlaceholder.classList.remove('hidden');
+                postImagePreview.classList.add('hidden');
+            }
+        });
+
+        clearFormBtn.addEventListener('click', () => {
+            uploadForm.reset();
+            postDate.valueAsDate = new Date();
+            postImagePlaceholder.classList.remove('hidden');
+            postImagePreview.classList.add('hidden');
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!postTitle.value.trim()) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                let imageUrl = null;
+                if (postImage.files && postImage.files[0]) {
+                    const file = postImage.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `news/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('gallery-images')
+                        .upload(fileName, file);
+                    if (uploadError) throw uploadError;
+                    const { data: { publicUrl } } = supabaseClient.storage.from('gallery-images').getPublicUrl(fileName);
+                    imageUrl = publicUrl;
+                }
+                
+                const { error } = await supabaseClient.from('news_posts').insert({
+                    title: postTitle.value.trim(),
+                    category: postCategory.value,
+                    description: postDescription.value.trim(),
+                    content: postContent.value.trim(),
+                    post_date: postDate.value,
+                    image_url: imageUrl
+                });
+                
+                if (error) throw error;
+                
+                alert('소식이 추가되었습니다!');
+                clearFormBtn.click();
+                loadNews();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        // Load News
+        const newsGrid = document.getElementById('newsGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        let allPosts = [];
+        let currentCategory = 'all';
+
+        async function loadNews() {
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            newsGrid.classList.add('hidden');
+            
+            try {
+                const { data: posts, error } = await supabaseClient
+                    .from('news_posts')
+                    .select('*')
+                    .order('post_date', { ascending: false })
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                loadingState.classList.add('hidden');
+                allPosts = posts || [];
+                renderNews();
+            } catch (error) {
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.querySelector('#emptyState h3').textContent = '연결 오류';
+                document.querySelector('#emptyState p').textContent = error.message;
+            }
+        }
+
+        function renderNews() {
+            const filtered = currentCategory === 'all' ? allPosts : allPosts.filter(p => p.category === currentCategory);
+            
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                newsGrid.classList.add('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            newsGrid.classList.remove('hidden');
+            newsGrid.innerHTML = '';
+            
+            filtered.forEach((post, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
+                card.setAttribute('data-aos', 'fade-up');
+                card.setAttribute('data-aos-delay', (index % 6) * 100);
+                
+                const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace('.', '');
+                const hasImage = post.image_url && post.image_url.trim() !== '';
+                
+                card.innerHTML = `
+                    ${hasImage ? `
+                        <div class="aspect-video rounded-xl overflow-hidden mb-4 -mx-6 -mt-6">
+                            <img src="${post.image_url}" alt="${post.title}" class="w-full h-full object-cover">
+                        </div>
+                    ` : ''}
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="category-badge category-${post.category}">${post.category}</span>
+                        <span class="text-sm text-gray-400">${dateFormatted}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2">${post.title}</h3>
+                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">${post.description || ''}</p>
+                    <div class="flex items-center text-brand-green font-medium text-sm">
+                        자세히 보기 <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => openDetail(post));
+                newsGrid.appendChild(card);
+            });
+            
+            lucide.createIcons();
+            AOS.refresh();
+        }
+
+        // Category Filter
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                categoryBtns.forEach(b => {
+                    b.classList.remove('bg-brand-green', 'text-white');
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                btn.classList.remove('bg-gray-200', 'text-gray-700');
+                btn.classList.add('bg-brand-green', 'text-white');
+                currentCategory = btn.dataset.category;
+                renderNews();
+            });
+        });
+
+        // Detail Modal
+        const detailModal = document.getElementById('detailModal');
+        const detailBackdrop = document.getElementById('detailBackdrop');
+        const detailClose = document.getElementById('detailClose');
+        const detailCategory = document.getElementById('detailCategory');
+        const detailDate = document.getElementById('detailDate');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailContent = document.getElementById('detailContent');
+        let currentPost = null;
+
+        const detailImageWrap = document.getElementById('detailImageWrap');
+        const detailImage = document.getElementById('detailImage');
+
+        function openDetail(post) {
+            currentPost = post;
+            if (post.image_url && post.image_url.trim() !== '') {
+                detailImageWrap.classList.remove('hidden');
+                detailImage.src = post.image_url;
+                detailImage.alt = post.title;
+            } else {
+                detailImageWrap.classList.add('hidden');
+            }
+            detailCategory.textContent = post.category;
+            detailCategory.className = `category-badge category-${post.category}`;
+            detailDate.textContent = new Date(post.post_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+            detailTitle.textContent = post.title;
+            detailContent.textContent = post.content || post.description || '';
+            detailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeDetail() {
+            detailModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            currentPost = null;
+        }
+
+        detailClose.addEventListener('click', closeDetail);
+        detailBackdrop.addEventListener('click', closeDetail);
+
+        // Delete
+        const detailDelete = document.getElementById('detailDelete');
+        detailDelete.addEventListener('click', async () => {
+            if (!currentPost || !confirm('정말 삭제하시겠습니까?')) return;
+            
+            try {
+                const { error } = await supabaseClient.from('news_posts').delete().eq('id', currentPost.id);
+                if (error) throw error;
+                alert('삭제되었습니다.');
+                closeDetail();
+                loadNews();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        // Edit
+        const detailEdit = document.getElementById('detailEdit');
+        const editModal = document.getElementById('editModal');
+        const editBackdrop = document.getElementById('editBackdrop');
+        const editClose = document.getElementById('editClose');
+        const editCancel = document.getElementById('editCancel');
+        const editForm = document.getElementById('editForm');
+        const editPostId = document.getElementById('editPostId');
+        const editTitle = document.getElementById('editTitle');
+        const editCategory = document.getElementById('editCategory');
+        const editDate = document.getElementById('editDate');
+        const editDescription = document.getElementById('editDescription');
+        const editContent = document.getElementById('editContent');
+
+        const editImage = document.getElementById('editImage');
+        const editImageCurrent = document.getElementById('editImageCurrent');
+        const editImageCurrentImg = document.getElementById('editImageCurrentImg');
+        const editImagePreview = document.getElementById('editImagePreview');
+        const editImagePreviewImg = document.getElementById('editImagePreviewImg');
+        const editImagePlaceholder = document.getElementById('editImagePlaceholder');
+
+        editImage.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    editImagePreviewImg.src = ev.target.result;
+                    editImagePreview.classList.remove('hidden');
+                    const btnText = document.getElementById('editImageButtonText');
+                    if (btnText) btnText.textContent = '다른 이미지 선택';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                editImagePreview.classList.add('hidden');
+                const btnText = document.getElementById('editImageButtonText');
+                if (btnText) btnText.textContent = '이미지 선택 / 교체';
+            }
+        });
+
+        detailEdit.addEventListener('click', () => {
+            if (!currentPost) return;
+            editPostId.value = currentPost.id;
+            editTitle.value = currentPost.title;
+            editCategory.value = currentPost.category;
+            editDate.value = currentPost.post_date;
+            editDescription.value = currentPost.description || '';
+            editContent.value = currentPost.content || '';
+            editImage.value = '';
+            editImagePreview.classList.add('hidden');
+            const editBtnText = document.getElementById('editImageButtonText');
+            if (editBtnText) editBtnText.textContent = '이미지 선택 / 교체';
+            if (currentPost.image_url && currentPost.image_url.trim() !== '') {
+                editImageCurrent.classList.remove('hidden');
+                editImageCurrentImg.src = currentPost.image_url;
+            } else {
+                editImageCurrent.classList.add('hidden');
+            }
+            closeDetail();
+            editModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        });
+
+        function closeEdit() {
+            editModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        editClose.addEventListener('click', closeEdit);
+        editBackdrop.addEventListener('click', closeEdit);
+        editCancel.addEventListener('click', closeEdit);
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                let imageUrl = currentPost ? currentPost.image_url : null;
+                if (editImage.files && editImage.files[0]) {
+                    const file = editImage.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `news/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('gallery-images')
+                        .upload(fileName, file);
+                    if (uploadError) throw uploadError;
+                    const { data: { publicUrl } } = supabaseClient.storage.from('gallery-images').getPublicUrl(fileName);
+                    imageUrl = publicUrl;
+                }
+                
+                const { error } = await supabaseClient.from('news_posts').update({
+                    title: editTitle.value.trim(),
+                    category: editCategory.value,
+                    description: editDescription.value.trim(),
+                    content: editContent.value.trim(),
+                    post_date: editDate.value,
+                    image_url: imageUrl
+                }).eq('id', editPostId.value);
+                
+                if (error) throw error;
+                alert('수정되었습니다.');
+                closeEdit();
+                loadNews();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetail();
+                closeEdit();
+            }
+        });
+
+        // Initial Load
+        loadNews();
+    </script>
+</body>
+</html>

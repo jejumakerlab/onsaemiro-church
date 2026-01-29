@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갤러리 | 온새미로교회</title>
+    <link rel="icon" type="image/svg+xml" href="./chicon.svg">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#2d5a27',
+                        'brand-light': '#e8f0e6',
+                        'brand-accent': '#8bc34a',
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Apple SD Gothic Neo', 'sans-serif'],
+                        serif: ['Noto Serif KR', 'Georgia', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d5a27;
+            border-radius: 4px;
+        }
+        
+        /* Modal Backdrop */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        
+        /* Image hover effect */
+        .gallery-card:hover .gallery-image {
+            transform: scale(1.05);
+        }
+        
+        /* Lightbox */
+        .lightbox {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #e8f0e6;
+            border-top: 3px solid #2d5a27;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Upload progress */
+        .upload-progress {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="./index.html" class="flex items-center gap-3 group">
+                    <img 
+                        src="./logo_onsaech.svg" 
+                        alt="온새미로교회 로고" 
+                        class="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
+                    >
+                </a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-1 items-center">
+                    <a href="./index.html#about" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">교회소개</a>
+                    <a href="./index.html#worship" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배안내</a>
+                    <a href="./index.html#sermon" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배실황</a>
+                    <a href="./index.html#news" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">교회소식</a>
+                    <a href="./gallery.html" class="nav-link px-4 py-2 rounded-full bg-brand-light text-brand-green font-medium transition-all duration-300">갤러리</a>
+                    <a href="./index.html#newcomer" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">새가족 안내</a>
+                    <a href="./index.html#location" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">오시는 길</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenu" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobileMenuBackdrop"></div>
+        <div class="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300" id="mobileMenuPanel">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-8">
+                    <span class="text-lg font-bold text-gray-900">메뉴</span>
+                    <button id="mobileMenuClose" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <a href="./index.html#about" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="church" class="w-5 h-5"></i>
+                        <span class="font-medium">교회소개</span>
+                    </a>
+                    <a href="./index.html#worship" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        <span class="font-medium">예배안내</span>
+                    </a>
+                    <a href="./index.html#sermon" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="video" class="w-5 h-5"></i>
+                        <span class="font-medium">예배실황</span>
+                    </a>
+                    <a href="./index.html#news" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="newspaper" class="w-5 h-5"></i>
+                        <span class="font-medium">교회소식</span>
+                    </a>
+                    <a href="./gallery.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl bg-brand-light text-brand-green transition-all duration-300">
+                        <i data-lucide="images" class="w-5 h-5"></i>
+                        <span class="font-medium">갤러리</span>
+                    </a>
+                    <a href="./index.html#newcomer" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                        <span class="font-medium">새가족 안내</span>
+                    </a>
+                    <a href="./index.html#location" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                        <span class="font-medium">오시는 길</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <section class="pt-32 pb-16 bg-gradient-to-br from-brand-green to-brand-green/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-white">
+                <div class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full mb-6" data-aos="fade-up">
+                    <i data-lucide="images" class="w-4 h-4"></i>
+                    <span class="text-sm font-medium tracking-wide">Gallery</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4" data-aos="fade-up" data-aos-delay="100">갤러리</h1>
+                <p class="text-lg text-white/80 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">온새미로교회의 소중한 순간들을 함께 나눕니다</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Toggle Button (Fixed Bottom Right) -->
+    <button id="adminToggle" class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-300 opacity-50 hover:opacity-100">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+    </button>
+
+    <!-- Admin Panel (Hidden by default) -->
+    <div id="adminPanel" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-2 border-brand-green">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-brand-green rounded-xl flex items-center justify-center">
+                    <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">새 게시물 추가</h2>
+            </div>
+            
+            <form id="uploadForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이미지 선택</label>
+                        <div class="relative">
+                            <input type="file" id="imageInput" accept="image/*" class="hidden" multiple>
+                            <label for="imageInput" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-green hover:bg-brand-light/30 transition-all duration-300">
+                                <div id="imagePreviewContainer" class="hidden w-full h-full p-2">
+                                    <div id="imagePreviewGrid" class="grid grid-cols-3 gap-2 h-full"></div>
+                                </div>
+                                <div id="uploadPlaceholder" class="text-center">
+                                    <i data-lucide="upload-cloud" class="w-12 h-12 text-gray-400 mx-auto mb-2"></i>
+                                    <p class="text-gray-600 font-medium">클릭하여 이미지 업로드</p>
+                                    <p class="text-sm text-gray-400 mt-1">PNG, JPG (최대 5MB)</p>
+                                </div>
+                            </label>
+                        </div>
+                        <!-- Upload Progress -->
+                        <div id="uploadProgressContainer" class="hidden mt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">업로드 중...</span>
+                                <span id="uploadProgressText" class="text-sm font-medium text-brand-green">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="uploadProgressBar" class="upload-progress bg-brand-green h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Fields -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
+                            <input type="text" id="postTitle" placeholder="게시물 제목을 입력하세요" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                        <div>
+                            <label for="postDescription" class="block text-sm font-medium text-gray-700 mb-2">설명</label>
+                            <textarea id="postDescription" rows="3" placeholder="게시물 설명을 입력하세요"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label for="postDate" class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                            <input type="date" id="postDate" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="clearForm" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">
+                        초기화
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="check" class="w-5 h-5"></i>
+                        게시물 추가
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
+        <!-- Loading State -->
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+            <div class="spinner mb-4"></div>
+            <p class="text-gray-600">갤러리를 불러오는 중...</p>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="image-off" class="w-12 h-12 text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">아직 게시물이 없습니다</h3>
+            <p class="text-gray-600">관리자 모드에서 첫 번째 게시물을 추가해보세요!</p>
+        </div>
+        
+        <!-- Gallery Items -->
+        <div id="galleryGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <!-- Gallery items will be dynamically added here -->
+        </div>
+    </section>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="lightboxBackdrop"></div>
+        <div class="relative max-w-5xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="lightboxContent">
+            <!-- Close Button -->
+            <button id="lightboxClose" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-700"></i>
+            </button>
+            
+            <!-- Image Carousel -->
+            <div class="relative">
+                <div id="lightboxImageContainer" class="aspect-video bg-gray-100 flex items-center justify-center">
+                    <img id="lightboxImage" src="" alt="" class="max-h-[70vh] w-auto object-contain">
+                </div>
+                
+                <!-- Image Counter -->
+                <div id="imageCounter" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                    <span id="currentImageNum">1</span> / <span id="totalImageNum">1</span>
+                </div>
+                
+                <!-- Navigation Arrows -->
+                <button id="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                    <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
+                </button>
+                <button id="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                    <i data-lucide="chevron-right" class="w-6 h-6 text-gray-700"></i>
+                </button>
+            </div>
+            
+            <!-- Info Section -->
+            <div class="p-6">
+                <h3 id="lightboxTitle" class="text-2xl font-bold text-gray-900 mb-2"></h3>
+                <p id="lightboxDate" class="text-sm text-gray-500 mb-3"></p>
+                <p id="lightboxDescription" class="text-gray-600"></p>
+                
+                <!-- Admin Buttons -->
+                <div id="adminButtons" class="hidden mt-4 flex gap-2">
+                    <button id="lightboxEdit" class="px-4 py-2 bg-brand-green hover:bg-brand-green/90 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                        수정
+                    </button>
+                    <button id="lightboxDelete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="editModalBackdrop"></div>
+        <div class="relative max-w-lg w-full bg-white rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">게시물 수정</h3>
+                    <button id="editModalClose" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+                
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editPostId">
+                    <div>
+                        <label for="editTitle" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
+                        <input type="text" id="editTitle" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label for="editDescription" class="block text-sm font-medium text-gray-700 mb-2">설명</label>
+                        <textarea id="editDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label for="editDate" class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                        <input type="date" id="editDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" id="editCancel" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">
+                            취소
+                        </button>
+                        <button type="submit" id="editSubmit" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                            저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <img src="./logo_onsaech_white.svg" alt="온새미로교회" class="h-10">
+                    <span class="text-gray-400">© 2026 온새미로교회. All rights reserved.</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors">
+                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <i data-lucide="youtube" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // Supabase Configuration
+        // ============================================
+        const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Admin Password
+        const ADMIN_PASSWORD = '1111';
+        
+        // ============================================
+        // Initialize
+        // ============================================
+        lucide.createIcons();
+        
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50
+        });
+
+        // ============================================
+        // Mobile Menu
+        // ============================================
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+
+        function openMobileMenu() {
+            mobileMenu.classList.remove('hidden');
+            setTimeout(() => {
+                mobileMenuPanel.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeMobileMenu() {
+            mobileMenuPanel.classList.add('translate-x-full');
+            setTimeout(() => {
+                mobileMenu.classList.add('hidden');
+            }, 300);
+        }
+
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+
+        // ============================================
+        // Admin Panel Toggle with Password
+        // ============================================
+        const adminToggle = document.getElementById('adminToggle');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminButtons = document.getElementById('adminButtons');
+        let isAdminMode = false;
+
+        adminToggle.addEventListener('click', () => {
+            if (!isAdminMode) {
+                // 비밀번호 확인
+                const password = prompt('관리자 비밀번호를 입력하세요:');
+                if (password !== ADMIN_PASSWORD) {
+                    if (password !== null) {
+                        alert('비밀번호가 올바르지 않습니다.');
+                    }
+                    return;
+                }
+            }
+            
+            isAdminMode = !isAdminMode;
+            adminPanel.classList.toggle('hidden');
+            adminToggle.innerHTML = isAdminMode 
+                ? '<i data-lucide="x" class="w-5 h-5"></i>'
+                : '<i data-lucide="settings" class="w-5 h-5"></i>';
+            
+            if (isAdminMode) {
+                adminButtons.classList.remove('hidden');
+            } else {
+                adminButtons.classList.add('hidden');
+            }
+            
+            lucide.createIcons();
+        });
+
+        // ============================================
+        // Image Upload Preview
+        // ============================================
+        const imageInput = document.getElementById('imageInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        let selectedFiles = [];
+
+        imageInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            imagePreviewGrid.innerHTML = '';
+            
+            if (selectedFiles.length > 0) {
+                uploadPlaceholder.classList.add('hidden');
+                imagePreviewContainer.classList.remove('hidden');
+                
+                selectedFiles.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgDiv = document.createElement('div');
+                        imgDiv.className = 'relative aspect-square rounded-lg overflow-hidden';
+                        imgDiv.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                        imagePreviewGrid.appendChild(imgDiv);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                uploadPlaceholder.classList.remove('hidden');
+                imagePreviewContainer.classList.add('hidden');
+            }
+        });
+
+        // ============================================
+        // Form Handling
+        // ============================================
+        const uploadForm = document.getElementById('uploadForm');
+        const clearFormBtn = document.getElementById('clearForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const postTitle = document.getElementById('postTitle');
+        const postDescription = document.getElementById('postDescription');
+        const postDate = document.getElementById('postDate');
+        const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+        const uploadProgressBar = document.getElementById('uploadProgressBar');
+        const uploadProgressText = document.getElementById('uploadProgressText');
+
+        // Set default date to today
+        postDate.valueAsDate = new Date();
+
+        function resetForm() {
+            uploadForm.reset();
+            postDate.valueAsDate = new Date();
+            selectedFiles = [];
+            imagePreviewGrid.innerHTML = '';
+            uploadPlaceholder.classList.remove('hidden');
+            imagePreviewContainer.classList.add('hidden');
+            uploadProgressContainer.classList.add('hidden');
+            uploadProgressBar.style.width = '0%';
+            uploadProgressText.textContent = '0%';
+        }
+
+        clearFormBtn.addEventListener('click', resetForm);
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (selectedFiles.length === 0) {
+                alert('이미지를 선택해주세요.');
+                return;
+            }
+            
+            if (!postTitle.value.trim()) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner w-5 h-5 border-2 border-white border-t-transparent"></div><span>업로드 중...</span>';
+            uploadProgressContainer.classList.remove('hidden');
+            
+            try {
+                // 1. Create post in database
+                const { data: post, error: postError } = await supabaseClient
+                    .from('gallery_posts')
+                    .insert({
+                        title: postTitle.value.trim(),
+                        description: postDescription.value.trim(),
+                        post_date: postDate.value
+                    })
+                    .select()
+                    .single();
+                
+                if (postError) throw postError;
+                
+                // 2. Upload images to storage
+                const totalFiles = selectedFiles.length;
+                let uploadedCount = 0;
+                
+                for (const file of selectedFiles) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${post.id}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+                    
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                        .from('gallery-images')
+                        .upload(fileName, file);
+                    
+                    if (uploadError) throw uploadError;
+                    
+                    // Get public URL
+                    const { data: { publicUrl } } = supabaseClient.storage
+                        .from('gallery-images')
+                        .getPublicUrl(fileName);
+                    
+                    // 3. Save image reference to database
+                    const { error: imageError } = await supabaseClient
+                        .from('gallery_images')
+                        .insert({
+                            post_id: post.id,
+                            image_url: publicUrl,
+                            display_order: uploadedCount
+                        });
+                    
+                    if (imageError) throw imageError;
+                    
+                    uploadedCount++;
+                    const progress = Math.round((uploadedCount / totalFiles) * 100);
+                    uploadProgressBar.style.width = `${progress}%`;
+                    uploadProgressText.textContent = `${progress}%`;
+                }
+                
+                alert('게시물이 추가되었습니다!');
+                resetForm();
+                loadGallery();
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('업로드 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>게시물 추가';
+                lucide.createIcons();
+            }
+        });
+
+        // ============================================
+        // Load Gallery from Supabase
+        // ============================================
+        const galleryGrid = document.getElementById('galleryGrid');
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+
+        async function loadGallery() {
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            galleryGrid.classList.add('hidden');
+            
+            console.log('Supabase 연결 시도 중...');
+            
+            try {
+                // Fetch posts with images
+                const { data: posts, error } = await supabaseClient
+                    .from('gallery_posts')
+                    .select(`
+                        *,
+                        gallery_images (*)
+                    `)
+                    .order('post_date', { ascending: false })
+                    .order('created_at', { ascending: false });
+                
+                console.log('응답:', { posts, error });
+                
+                if (error) {
+                    console.error('Supabase 에러:', error);
+                    throw error;
+                }
+                
+                loadingState.classList.add('hidden');
+                
+                if (!posts || posts.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    console.log('게시물 없음');
+                    return;
+                }
+                
+                galleryGrid.classList.remove('hidden');
+                galleryGrid.innerHTML = '';
+                
+                posts.forEach((post, index) => {
+                    const images = post.gallery_images.sort((a, b) => a.display_order - b.display_order);
+                    if (images.length === 0) return;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
+                    card.setAttribute('data-aos', 'fade-up');
+                    card.setAttribute('data-aos-delay', (index % 6) * 100);
+                    
+                    const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    card.innerHTML = `
+                        <div class="relative aspect-square overflow-hidden">
+                            <img src="${images[0].image_url}" alt="${post.title}" class="gallery-image w-full h-full object-cover transition-transform duration-500">
+                            ${images.length > 1 ? `
+                                <div class="absolute top-2 right-2 bg-black/60 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
+                                    <i data-lucide="images" class="w-3 h-3"></i>
+                                    ${images.length}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="p-3">
+                            <p class="text-xs text-brand-green font-medium mb-1">${dateFormatted}</p>
+                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1">${post.title}</h3>
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', () => openLightbox(post, images));
+                    galleryGrid.appendChild(card);
+                });
+                
+                lucide.createIcons();
+                AOS.refresh();
+                
+            } catch (error) {
+                console.error('Load error:', error);
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.querySelector('#emptyState h3').textContent = '연결 오류';
+                document.querySelector('#emptyState p').textContent = error.message || 'Supabase 연결에 실패했습니다. 콘솔(F12)을 확인하세요.';
+            }
+        }
+        
+        // 연결 테스트
+        async function testConnection() {
+            console.log('=== Supabase 연결 테스트 ===');
+            console.log('URL:', SUPABASE_URL);
+            console.log('Key 앞 20자:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
+            
+            try {
+                const { data, error } = await supabaseClient.from('gallery_posts').select('count');
+                if (error) {
+                    console.error('테스트 실패:', error);
+                } else {
+                    console.log('테스트 성공:', data);
+                }
+            } catch (e) {
+                console.error('테스트 예외:', e);
+            }
+        }
+        
+        testConnection();
+
+        // ============================================
+        // Lightbox
+        // ============================================
+        const lightbox = document.getElementById('lightbox');
+        const lightboxBackdrop = document.getElementById('lightboxBackdrop');
+        const lightboxClose = document.getElementById('lightboxClose');
+        const lightboxContent = document.getElementById('lightboxContent');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxTitle = document.getElementById('lightboxTitle');
+        const lightboxDate = document.getElementById('lightboxDate');
+        const lightboxDescription = document.getElementById('lightboxDescription');
+        const lightboxPrev = document.getElementById('lightboxPrev');
+        const lightboxNext = document.getElementById('lightboxNext');
+        const currentImageNum = document.getElementById('currentImageNum');
+        const totalImageNum = document.getElementById('totalImageNum');
+        const imageCounter = document.getElementById('imageCounter');
+
+        let currentPost = null;
+        let currentImages = [];
+        let currentImageIndex = 0;
+
+        function openLightbox(post, images) {
+            currentPost = post;
+            currentImages = images;
+            currentImageIndex = 0;
+            updateLightboxImage();
+            
+            lightboxTitle.textContent = post.title;
+            lightboxDate.textContent = new Date(post.post_date).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            lightboxDescription.textContent = post.description || '';
+            
+            totalImageNum.textContent = images.length;
+            
+            // Show/hide navigation arrows
+            if (images.length <= 1) {
+                lightboxPrev.classList.add('hidden');
+                lightboxNext.classList.add('hidden');
+                imageCounter.classList.add('hidden');
+            } else {
+                lightboxPrev.classList.remove('hidden');
+                lightboxNext.classList.remove('hidden');
+                imageCounter.classList.remove('hidden');
+            }
+            
+            lightbox.classList.add('active');
+            lightboxContent.classList.remove('scale-95');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxContent.classList.add('scale-95');
+            document.body.style.overflow = '';
+            currentPost = null;
+            currentImages = [];
+        }
+
+        function updateLightboxImage() {
+            if (currentImages.length > 0) {
+                lightboxImage.src = currentImages[currentImageIndex].image_url;
+                currentImageNum.textContent = currentImageIndex + 1;
+            }
+        }
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxBackdrop.addEventListener('click', closeLightbox);
+
+        lightboxPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentImages.length > 1) {
+                currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+                updateLightboxImage();
+            }
+        });
+
+        lightboxNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentImages.length > 1) {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                updateLightboxImage();
+            }
+        });
+
+        // ============================================
+        // Delete Post
+        // ============================================
+        const lightboxDelete = document.getElementById('lightboxDelete');
+        lightboxDelete.addEventListener('click', async () => {
+            if (!currentPost) return;
+            
+            if (!confirm('정말 이 게시물을 삭제하시겠습니까?\n이미지도 함께 삭제됩니다.')) return;
+            
+            try {
+                // Delete images from storage
+                for (const image of currentImages) {
+                    const path = image.image_url.split('/gallery-images/')[1];
+                    if (path) {
+                        await supabaseClient.storage.from('gallery-images').remove([path]);
+                    }
+                }
+                
+                // Delete post (images will be cascade deleted)
+                const { error } = await supabaseClient
+                    .from('gallery_posts')
+                    .delete()
+                    .eq('id', currentPost.id);
+                
+                if (error) throw error;
+                
+                alert('게시물이 삭제되었습니다.');
+                closeLightbox();
+                loadGallery();
+                
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
+            }
+        });
+
+        // ============================================
+        // Edit Post
+        // ============================================
+        const lightboxEdit = document.getElementById('lightboxEdit');
+        const editModal = document.getElementById('editModal');
+        const editModalBackdrop = document.getElementById('editModalBackdrop');
+        const editModalClose = document.getElementById('editModalClose');
+        const editForm = document.getElementById('editForm');
+        const editPostId = document.getElementById('editPostId');
+        const editTitle = document.getElementById('editTitle');
+        const editDescription = document.getElementById('editDescription');
+        const editDate = document.getElementById('editDate');
+        const editCancel = document.getElementById('editCancel');
+
+        lightboxEdit.addEventListener('click', () => {
+            if (!currentPost) return;
+            
+            // Fill form with current data
+            editPostId.value = currentPost.id;
+            editTitle.value = currentPost.title;
+            editDescription.value = currentPost.description || '';
+            editDate.value = currentPost.post_date;
+            
+            // Close lightbox and open edit modal
+            closeLightbox();
+            editModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        });
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        editModalClose.addEventListener('click', closeEditModal);
+        editModalBackdrop.addEventListener('click', closeEditModal);
+        editCancel.addEventListener('click', closeEditModal);
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const postId = editPostId.value;
+            const title = editTitle.value.trim();
+            const description = editDescription.value.trim();
+            const postDate = editDate.value;
+            
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('gallery_posts')
+                    .update({
+                        title: title,
+                        description: description,
+                        post_date: postDate
+                    })
+                    .eq('id', postId);
+                
+                if (error) throw error;
+                
+                alert('게시물이 수정되었습니다.');
+                closeEditModal();
+                loadGallery();
+                
+            } catch (error) {
+                console.error('Update error:', error);
+                alert('수정 중 오류가 발생했습니다: ' + error.message);
+            }
+        });
+
+        // ============================================
+        // Keyboard Navigation
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') lightboxPrev.click();
+            if (e.key === 'ArrowRight') lightboxNext.click();
+        });
+
+        // ============================================
+        // Initial Load
+        // ============================================
+        loadGallery();
+    </script>
+</body>
+</html>
