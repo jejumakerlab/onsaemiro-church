@@ -347,7 +347,7 @@
                 <div class="flex-shrink-0 flex items-center">
                     <a href="#" class="flex items-center gap-3 group">
                         <img 
-                            src="./logo_onsaech.svg" 
+                            src="./logo_onsaech_white.svg" 
                             alt="온새미로교회 로고" 
                             class="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
                             id="nav-logo"
@@ -1532,6 +1532,8 @@
                 navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
                 navbar.classList.remove('bg-transparent');
                 
+                navLogo.src = './logo_onsaech.svg';
+                
                 navLinks.forEach(link => {
                     link.classList.remove('text-white/90', 'hover:text-white', 'hover:bg-white/10');
                     link.classList.add('text-gray-600', 'hover:text-brand-green', 'hover:bg-brand-light');
@@ -1547,6 +1549,8 @@
             } else {
                 navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
                 navbar.classList.add('bg-transparent');
+                
+                navLogo.src = './logo_onsaech_white.svg';
                 
                 navLinks.forEach(link => {
                     link.classList.add('text-white/90', 'hover:text-white', 'hover:bg-white/10');
