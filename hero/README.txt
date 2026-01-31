@@ -1,6 +1,6 @@
 랜딩 페이지 배경 이미지 폴더입니다.
 
-hero01.jpg ~ hero11.jpg (또는 hero1.jpg, hero2.jpg) 파일을 넣으면
+hero01.webp ~ hero11.webp 파일을 넣으면
 메인 화면 배경 슬라이드에 랜덤 순서로 표시됩니다.
 
 - 10초마다 전환

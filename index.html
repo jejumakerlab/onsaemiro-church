@@ -351,6 +351,7 @@
                             alt="온새미로교회 로고" 
                             class="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
                             id="nav-logo"
+                            loading="eager"
                         >
                     </a>
                 </div>
@@ -538,6 +539,7 @@
                                 src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop" 
                                 alt="예배 모습" 
                                 class="w-full h-[500px] object-cover"
+                                loading="lazy"
                             >
                             <div class="absolute inset-0 bg-gradient-to-t from-brand-green/40 to-transparent"></div>
                         </div>
@@ -696,6 +698,7 @@
                             src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop" 
                             alt="주일오전예배" 
                             class="service-image w-full h-full object-cover transition-transform duration-700"
+                            loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div class="absolute bottom-4 left-4">
@@ -723,6 +726,7 @@
                             src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?q=80&w=1974&auto=format&fit=crop" 
                             alt="수요성경공부" 
                             class="service-image w-full h-full object-cover transition-transform duration-700"
+                            loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div class="absolute bottom-4 left-4">
@@ -750,6 +754,7 @@
                             src="https://images.unsplash.com/photo-1478147427282-58a87a120781?q=80&w=1974&auto=format&fit=crop" 
                             alt="금요찬양예배" 
                             class="service-image w-full h-full object-cover transition-transform duration-700"
+                            loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div class="absolute bottom-4 left-4">
@@ -777,6 +782,7 @@
                             src="https://images.unsplash.com/photo-1502481851512-e9e2529bfbf9?q=80&w=2069&auto=format&fit=crop" 
                             alt="새벽기도" 
                             class="service-image w-full h-full object-cover transition-transform duration-700"
+                            loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div class="absolute bottom-4 left-4">
@@ -845,6 +851,7 @@
                                     src="" 
                                     alt="최신 설교 영상" 
                                     class="w-full h-full object-cover"
+                                    loading="lazy"
                                 >
                                 <!-- 재생 버튼 오버레이 -->
                                 <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-all duration-300">
@@ -1030,6 +1037,7 @@
                         src="./gallery/gallery001.png" 
                         alt="온새미로 이야기 1" 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
                     >
                     <div class="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="flex items-center gap-2 text-white">
@@ -1047,6 +1055,7 @@
                         src="./gallery/gallery002.png" 
                         alt="온새미로 이야기 2" 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
                     >
                     <div class="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="flex items-center gap-2 text-white">
@@ -1064,6 +1073,7 @@
                         src="./gallery/gallery003.png" 
                         alt="온새미로 이야기 3" 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
                     >
                     <div class="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="flex items-center gap-2 text-white">
@@ -1081,6 +1091,7 @@
                         src="./gallery/gallery004.png" 
                         alt="온새미로 이야기 4" 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
                     >
                     <div class="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="flex items-center gap-2 text-white">
@@ -1171,6 +1182,7 @@
                             src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=2070&auto=format&fit=crop" 
                             alt="환영" 
                             class="w-full h-[500px] object-cover"
+                            loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-brand-green/60 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -1306,7 +1318,7 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
                 <!-- Brand -->
                 <div class="lg:col-span-1">
-                    <img src="./logo_onsaech_white.svg" alt="온새미로교회" class="h-14 mb-4">
+                    <img src="./logo_onsaech_white.svg" alt="온새미로교회" class="h-14 mb-4" loading="lazy">
                     <p class="text-gray-400 leading-relaxed mb-6">
                         '온새미로'는 순우리말로<br>
                         '있는 모습 그대로, 변함없이'라는 뜻입니다.<br>
@@ -1602,14 +1614,12 @@
             });
         });
 
-        // 히어로 배경 슬라이드 (hero01~hero11 랜덤 순서, 10초마다 전환)
+        // 히어로 배경 슬라이드 (hero01~hero11.webp 랜덤, 첫 장 즉시 로드, 나머지 슬라이드 전환 시 로드)
         (function initHeroSlides() {
             const fallbackImg = 'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?w=1920&q=80';
             const images = ['hero01', 'hero02', 'hero03', 'hero04', 'hero05', 'hero06', 'hero07', 'hero08', 'hero09', 'hero10', 'hero11'];
-            const altNames = { hero01: 'hero1', hero02: 'hero2' };
             const anims = ['anim-zoom', 'anim-up', 'anim-right', 'anim-down', 'anim-left'];
             
-            // 랜덤 셔플
             for (let i = images.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [images[i], images[j]] = [images[j], images[i]];
@@ -1618,18 +1628,25 @@
             const container = document.getElementById('heroSlidesContainer');
             const overlay = container.querySelector('.hero-overlay');
             
+            function loadSlideImg(img) {
+                if (img.dataset.loaded || !img.dataset.src) return;
+                img.src = img.dataset.src;
+                img.dataset.loaded = '1';
+            }
+            
             images.forEach((name, i) => {
                 const slide = document.createElement('div');
                 slide.className = 'hero-slide' + (i === 0 ? ' active' : '') + ' ' + anims[i % anims.length];
                 const img = document.createElement('img');
-                img.src = './hero/' + name + '.jpg';
                 img.alt = '';
-                img.onerror = function() { 
-                    const alt = altNames[name];
-                    if (alt) this.src = './hero/' + alt + '.jpg';
-                    else this.src = fallbackImg;
-                    this.onerror = function() { this.src = fallbackImg; };
-                };
+                img.loading = i === 0 ? 'eager' : 'lazy';
+                if (i === 0) {
+                    img.src = './hero/' + name + '.webp';
+                    img.dataset.loaded = '1';
+                } else {
+                    img.dataset.src = './hero/' + name + '.webp';
+                }
+                img.onerror = function() { this.src = fallbackImg; };
                 slide.appendChild(img);
                 container.insertBefore(slide, overlay);
             });
@@ -1639,7 +1656,13 @@
             setInterval(() => {
                 slides[current].classList.remove('active');
                 current = (current + 1) % slides.length;
-                slides[current].classList.add('active');
+                const nextSlide = slides[current];
+                const nextImg = nextSlide.querySelector('img');
+                if (nextImg && nextImg.dataset.src) loadSlideImg(nextImg);
+                const nextIdx = (current + 1) % slides.length;
+                const preloadImg = slides[nextIdx].querySelector('img');
+                if (preloadImg && preloadImg.dataset.src) loadSlideImg(preloadImg);
+                nextSlide.classList.add('active');
             }, 10000);
         })();
 
@@ -1821,7 +1844,7 @@
                     }).replace(/\. /g, '.').replace(/\.$/, '');
                     const colorClass = categoryColors[post.category] || categoryColors['기타'];
                     const hasImage = post.image_url && post.image_url.trim() !== '';
-                    const imageBlock = hasImage ? '<div class="aspect-video overflow-hidden"><img src="' + post.image_url + '" alt="' + (post.title || '').replace(/"/g, '&quot;') + '" class="w-full h-full object-cover"></div>' : '';
+                    const imageBlock = hasImage ? '<div class="aspect-video overflow-hidden"><img src="' + post.image_url + '" alt="' + (post.title || '').replace(/"/g, '&quot;') + '" class="w-full h-full object-cover" loading="lazy"></div>' : '';
                     return `
                         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}">
                             ${imageBlock}
