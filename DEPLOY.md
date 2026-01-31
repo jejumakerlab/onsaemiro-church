@@ -63,5 +63,6 @@ git push -u origin main
 ## 5. 주의사항
 
 - **Supabase** 키·URL은 그대로 두면 됩니다 (클라이언트용이라 배포 환경에서도 동작)
+- **YouTube 예배실황**: Vercel 배포 시 `api/youtube-latest.js`가 서버리스 함수로 동작하여 최신 영상 ID를 5분간 캐싱합니다. 다른 호스팅 환경에서는 allorigins 프록시로 폴백됩니다.
 - 이미지·파일 경로는 `./` 상대 경로라 그대로 사용 가능
 - 랜딩 배경 이미지는 `hero` 폴더의 `hero01.webp` ~ `hero11.webp`를 사용합니다. 없으면 기본 이미지가 보입니다.

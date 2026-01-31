@@ -50,8 +50,11 @@
             box-sizing: border-box;
         }
         
+        html { overflow-x: hidden; }
+        
         body {
             font-family: 'Pretendard', sans-serif;
+            overflow-x: hidden;
         }
         
         /* Custom Scrollbar */
@@ -108,12 +111,15 @@
         .upload-progress {
             transition: width 0.3s ease;
         }
+        
+        /* 모바일 가로 넘침 방지 */
+        img, video, iframe { max-width: 100%; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-x-hidden">
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="fixed w-full z-50 bg-white shadow-sm overflow-x-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <a href="./index.html" class="flex items-center gap-3 group">
@@ -445,7 +451,8 @@
         AOS.init({
             duration: 800,
             once: true,
-            offset: 50
+            offset: 50,
+            disable: function() { return window.innerWidth < 640; }
         });
 
         // ============================================
