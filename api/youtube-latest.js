@@ -42,10 +42,13 @@ function extractVideoIdFromRss(xmlText) {
 }
 
 function extractMetadataFromRss(xmlText) {
-  const titleMatch = xmlText.match(/<title>([^<]+)<\/title>/);
-  const publishedMatch = xmlText.match(/<published>([^<]+)<\/published>/);
+  // 첫 번째 <entry> 블록 내에서만 추출 (채널 제목이 아닌 영상 제목/날짜)
+  const entryMatch = xmlText.match(/<entry>[\s\S]*?<\/entry>/);
+  const entryXml = entryMatch ? entryMatch[0] : xmlText;
+  const titleMatch = entryXml.match(/<title>([^<]+)<\/title>/);
+  const publishedMatch = entryXml.match(/<published>([^<]+)<\/published>/);
   return {
-    title: titleMatch ? titleMatch[1] : '',
-    published: publishedMatch ? publishedMatch[1] : ''
+    title: titleMatch ? titleMatch[1].trim() : '',
+    published: publishedMatch ? publishedMatch[1].trim() : ''
   };
 }
