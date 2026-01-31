@@ -331,6 +331,15 @@
             }
         }
         
+        /* AOS 비활성화 시 모바일에서 요소가 보이도록 (opacity:0 상태 방지) */
+        @media (max-width: 639px) {
+            [data-aos] {
+                opacity: 1 !important;
+                transform: none !important;
+                visibility: visible !important;
+            }
+        }
+        
         /* 모바일 가로 넘침 방지 */
         img, video, iframe {
             max-width: 100%;
