@@ -46,7 +46,7 @@ git push -u origin main
 5. 설정 확인:
    - **Framework Preset**: Other (또는 None)
    - **Root Directory**: 비워두기 (`.` 그대로)
-   - **Build Command**: 비워두기
+   - **Build Command**: `npm install && npm run build`
    - **Output Directory**: 비워두기 (정적 사이트라서)
 6. **Deploy** 클릭
 

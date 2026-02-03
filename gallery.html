@@ -6,40 +6,13 @@
     <title>갤러리 | 온새미로교회</title>
     <link rel="icon" type="image/svg+xml" href="./chicon.svg">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        window.tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-green': '#2d5a27',
-                        'brand-light': '#e8f0e6',
-                        'brand-accent': '#8bc34a',
-                    },
-                    fontFamily: {
-                        sans: ['Pretendard', 'Apple SD Gothic Neo', 'sans-serif'],
-                        serif: ['Noto Serif KR', 'Georgia', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
+    <link rel="stylesheet" href="./css/output.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" media="print" onload="this.media='all'">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -114,6 +87,10 @@
         
         /* 모바일 가로 넘침 방지 */
         img, video, iframe { max-width: 100%; }
+        /* AOS 비활성화 시 모바일에서 요소가 보이도록 */
+        @media (max-width: 639px) {
+            [data-aos] { opacity: 1 !important; transform: none !important; visibility: visible !important; }
+        }
     </style>
 </head>
 <body class="bg-gray-50 overflow-x-hidden">
@@ -142,11 +119,11 @@
                     <a href="./index.html#location" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">오시는 길</a>
                     <!-- Social Icons -->
                     <div class="flex items-center space-x-2 pl-4 ml-4 border-l border-gray-200">
-                        <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" 
+                        <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" rel="noopener noreferrer" aria-label="인스타그램"
                            class="p-2 rounded-full text-gray-500 hover:text-pink-500 hover:bg-gray-100 transition-all duration-300">
                             <i data-lucide="instagram" class="w-5 h-5"></i>
                         </a>
-                        <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
+                        <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" rel="noopener noreferrer" aria-label="유튜브"
                            class="p-2 rounded-full text-gray-500 hover:text-red-600 hover:bg-gray-100 transition-all duration-300">
                             <i data-lucide="youtube" class="w-5 h-5"></i>
                         </a>
@@ -154,7 +131,7 @@
                 </div>
                 
                 <!-- Mobile Menu Button -->
-                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors" aria-label="메뉴 열기">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -168,7 +145,7 @@
             <div class="p-6">
                 <div class="flex justify-between items-center mb-8">
                     <span class="text-lg font-bold text-gray-900">메뉴</span>
-                    <button id="mobileMenuClose" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <button id="mobileMenuClose" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="메뉴 닫기">
                         <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
                     </button>
                 </div>
@@ -221,7 +198,7 @@
     </section>
 
     <!-- Admin Toggle Button (Fixed Bottom Right) -->
-    <button id="adminToggle" class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-300 opacity-50 hover:opacity-100">
+    <button id="adminToggle" class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-300 opacity-50 hover:opacity-100" aria-label="관리자 설정">
         <i data-lucide="settings" class="w-5 h-5"></i>
     </button>
 
@@ -326,14 +303,14 @@
         <div class="absolute inset-0 modal-backdrop" id="lightboxBackdrop"></div>
         <div class="relative max-w-5xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="lightboxContent">
             <!-- Close Button -->
-            <button id="lightboxClose" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+            <button id="lightboxClose" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors" aria-label="닫기">
                 <i data-lucide="x" class="w-5 h-5 text-gray-700"></i>
             </button>
             
             <!-- Image Carousel -->
             <div class="relative">
                 <div id="lightboxImageContainer" class="aspect-video bg-gray-100 flex items-center justify-center">
-                    <img id="lightboxImage" src="" alt="" class="max-h-[70vh] w-auto object-contain" loading="eager">
+                    <img id="lightboxImage" src="" alt="갤러리 이미지" class="max-h-[70vh] w-auto object-contain" loading="eager">
                 </div>
                 
                 <!-- Image Counter -->
@@ -342,10 +319,10 @@
                 </div>
                 
                 <!-- Navigation Arrows -->
-                <button id="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                <button id="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors" aria-label="이전 이미지">
                     <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
                 </button>
-                <button id="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                <button id="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors" aria-label="다음 이미지">
                     <i data-lucide="chevron-right" class="w-6 h-6 text-gray-700"></i>
                 </button>
             </div>
@@ -431,7 +408,11 @@
         </div>
     </footer>
 
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
         // ============================================
         // Supabase Configuration
         // ============================================
@@ -984,6 +965,7 @@
         // Initial Load
         // ============================================
         loadGallery();
+        });
     </script>
 </body>
 </html>
