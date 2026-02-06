@@ -7,7 +7,6 @@
     <link rel="icon" type="image/svg+xml" href="./chicon.svg">
     
     <link rel="stylesheet" href="./css/output.css">
-    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,10 +57,6 @@
         
         /* 모바일 가로 넘침 방지 */
         img, video, iframe { max-width: 100%; }
-        /* AOS 비활성화 시 모바일에서 요소가 보이도록 */
-        @media (max-width: 639px) {
-            [data-aos] { opacity: 1 !important; transform: none !important; visibility: visible !important; }
-        }
     </style>
 </head>
 <body class="bg-gray-50 overflow-x-hidden">
@@ -144,12 +139,12 @@
     <section class="pt-32 pb-16 bg-gradient-to-br from-brand-green to-brand-green/80">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center text-white">
-                <div class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full mb-6" data-aos="fade-up">
+                <div class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full mb-6">
                     <i data-lucide="newspaper" class="w-4 h-4"></i>
                     <span class="text-sm font-medium tracking-wide">News & Notice</span>
                 </div>
-                <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4" data-aos="fade-up" data-aos-delay="100">교회 소식</h1>
-                <p class="text-lg text-white/80 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">온새미로교회의 다양한 소식을 전해드려요</p>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4">교회 소식</h1>
+                <p class="text-lg text-white/80 max-w-2xl mx-auto">온새미로교회의 다양한 소식을 전해드려요</p>
             </div>
         </div>
     </section>
@@ -228,7 +223,7 @@
     <!-- News Grid -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
         <!-- Category Filter -->
-        <div class="flex flex-wrap gap-3 mb-8" data-aos="fade-up">
+        <div class="flex flex-wrap gap-3 mb-8">
             <button class="category-btn active px-5 py-2 rounded-full bg-brand-green text-white font-medium transition-all" data-category="all">전체</button>
             <button class="category-btn px-5 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-brand-light hover:text-brand-green font-medium transition-all" data-category="공지">공지</button>
             <button class="category-btn px-5 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-brand-light hover:text-brand-green font-medium transition-all" data-category="안내">안내</button>
@@ -376,7 +371,6 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
@@ -384,9 +378,7 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const ADMIN_PASSWORD = '1111';
 
-        // Initialize
         lucide.createIcons();
-        AOS.init({ duration: 800, once: true, offset: 50, disable: function() { return window.innerWidth < 640; } });
 
         // Mobile Menu
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -566,10 +558,6 @@
             filtered.forEach((post, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
-                if (window.innerWidth >= 640) {
-                    card.setAttribute('data-aos', 'fade-up');
-                    card.setAttribute('data-aos-delay', (index % 6) * 100);
-                }
                 
                 const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace('.', '');
                 const hasImage = post.image_url && post.image_url.trim() !== '';
@@ -597,7 +585,6 @@
             });
             
             lucide.createIcons();
-            AOS.refresh();
         }
 
         // Category Filter
@@ -798,10 +785,10 @@
                 }
             })();
         }
-        if (typeof window.supabase !== 'undefined') {
-            runInit();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runInit);
         } else {
-            window.addEventListener('load', runInit);
+            runInit();
         }
         window.addEventListener('pageshow', (e) => { if (e.persisted) loadNews(); });
     </script>
