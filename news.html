@@ -7,7 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="./chicon.svg">
     
     <link rel="stylesheet" href="./css/output.css">
-    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -373,11 +374,9 @@
         </div>
     </footer>
 
-    <script src="https://unpkg.com/lucide@latest" defer></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
         // Supabase Configuration
         const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
@@ -786,7 +785,6 @@
                 if (post) openDetail(post);
             }
         })();
-        });
     </script>
 </body>
 </html>
