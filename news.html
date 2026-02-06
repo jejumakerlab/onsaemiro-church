@@ -246,8 +246,9 @@
             <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i data-lucide="newspaper" class="w-12 h-12 text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">아직 소식이 없습니다</h3>
-            <p class="text-gray-600">관리자 모드에서 첫 번째 소식을 추가해보세요!</p>
+            <h3 id="emptyStateTitle" class="text-xl font-bold text-gray-900 mb-2">아직 소식이 없습니다</h3>
+            <p id="emptyStateDesc" class="text-gray-600 mb-4">관리자 모드에서 첫 번째 소식을 추가해보세요!</p>
+            <button id="emptyStateRetry" type="button" class="hidden px-6 py-2 bg-brand-green text-white rounded-full font-medium hover:bg-brand-green/90 transition-colors" aria-label="다시 시도">다시 시도</button>
         </div>
         
         <!-- News Items -->
@@ -535,10 +536,15 @@
             } catch (error) {
                 loadingState.classList.add('hidden');
                 emptyState.classList.remove('hidden');
-                document.querySelector('#emptyState h3').textContent = '연결 오류';
-                document.querySelector('#emptyState p').textContent = error.message;
+                document.getElementById('emptyStateTitle').textContent = '연결 오류';
+                document.getElementById('emptyStateDesc').textContent = error.message || '소식을 불러올 수 없습니다.';
+                document.getElementById('emptyStateRetry').classList.remove('hidden');
             }
         }
+        document.getElementById('emptyStateRetry')?.addEventListener('click', () => {
+            document.getElementById('emptyStateRetry').classList.add('hidden');
+            loadNews();
+        });
 
         function renderNews() {
             const filtered = currentCategory === 'all' ? allPosts : allPosts.filter(p => p.category === currentCategory);
@@ -546,18 +552,24 @@
             if (filtered.length === 0) {
                 emptyState.classList.remove('hidden');
                 newsGrid.classList.add('hidden');
+                document.getElementById('emptyStateTitle').textContent = '아직 소식이 없습니다';
+                document.getElementById('emptyStateDesc').textContent = '관리자 모드에서 첫 번째 소식을 추가해보세요!';
+                document.getElementById('emptyStateRetry').classList.add('hidden');
                 return;
             }
             
             emptyState.classList.add('hidden');
+            document.getElementById('emptyStateRetry').classList.add('hidden');
             newsGrid.classList.remove('hidden');
             newsGrid.innerHTML = '';
             
             filtered.forEach((post, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
-                card.setAttribute('data-aos', 'fade-up');
-                card.setAttribute('data-aos-delay', (index % 6) * 100);
+                if (window.innerWidth >= 640) {
+                    card.setAttribute('data-aos', 'fade-up');
+                    card.setAttribute('data-aos-delay', (index % 6) * 100);
+                }
                 
                 const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace('.', '');
                 const hasImage = post.image_url && post.image_url.trim() !== '';
@@ -775,16 +787,23 @@
             }
         });
 
-        // Initial Load
-        (async function init() {
-            await loadNews();
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if (id) {
-                const post = allPosts.find(p => String(p.id) === id);
-                if (post) openDetail(post);
-            }
-        })();
+        function runInit() {
+            (async function init() {
+                await loadNews();
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get('id');
+                if (id) {
+                    const post = allPosts.find(p => String(p.id) === id);
+                    if (post) openDetail(post);
+                }
+            })();
+        }
+        if (typeof window.supabase !== 'undefined') {
+            runInit();
+        } else {
+            window.addEventListener('load', runInit);
+        }
+        window.addEventListener('pageshow', (e) => { if (e.persisted) loadNews(); });
     </script>
 </body>
 </html>
