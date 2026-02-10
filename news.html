@@ -602,36 +602,41 @@
             newsGrid.style.display = 'grid';
             newsGrid.innerHTML = '';
             
-            filtered.forEach((post, index) => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
-                
-                const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace('.', '');
-                const hasImage = post.image_url && post.image_url.trim() !== '';
-                
-                card.innerHTML = `
-                    ${hasImage ? `
-                        <div class="aspect-video rounded-xl overflow-hidden mb-4 -mx-6 -mt-6">
-                            <img src="${post.image_url}" alt="${(post.title || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover" loading="lazy">
-                        </div>
-                    ` : ''}
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="category-badge category-${post.category}">${post.category}</span>
-                        <span class="text-sm text-gray-400">${dateFormatted}</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2">${post.title}</h3>
-                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">${post.description || ''}</p>
-                    <div class="flex items-center text-brand-green font-medium text-sm">
-                        자세히 보기 <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
-                    </div>
-                `;
-                card.setAttribute('role', 'button');
-                card.setAttribute('aria-label', (post.title || '소식') + ' 자세히 보기');
-                card.addEventListener('click', () => openDetail(post));
-                newsGrid.appendChild(card);
+            let appended = 0;
+            filtered.forEach((post) => {
+                try {
+                    if (!post || !post.title) return;
+                    var dateFormatted = '';
+                    try {
+                        dateFormatted = new Date(post.post_date || '').toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '');
+                    } catch (_) { dateFormatted = ''; }
+                    var hasImage = !!(post.image_url && String(post.image_url).trim());
+                    var title = String(post.title || '').replace(/"/g, '&quot;');
+                    var desc = String(post.description || '');
+                    var cat = String(post.category || '');
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer';
+                    card.innerHTML = (hasImage ? '<div class="aspect-video rounded-xl overflow-hidden mb-4 -mx-6 -mt-6"><img src="' + post.image_url + '" alt="' + title + '" class="w-full h-full object-cover" loading="lazy"></div>' : '') +
+                        '<div class="flex items-center gap-3 mb-4"><span class="category-badge category-' + cat + '">' + cat + '</span><span class="text-sm text-gray-400">' + dateFormatted + '</span></div>' +
+                        '<h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2">' + post.title + '</h3><p class="text-gray-600 text-sm line-clamp-2 mb-4">' + desc + '</p>' +
+                        '<div class="flex items-center text-brand-green font-medium text-sm">자세히 보기 <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></div>';
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('aria-label', (post.title || '소식') + ' 자세히 보기');
+                    card.addEventListener('click', function() { openDetail(post); });
+                    newsGrid.appendChild(card);
+                    appended++;
+                } catch (e) {
+                    console.warn('news card render error', e);
+                }
             });
             
-            try { lucide.createIcons(); } catch (e) { /* 아이콘 로드 실패 시에도 그리드는 표시 */ }
+            if (appended === 0) {
+                showEmpty('소식을 표시할 수 없습니다', '잠시 후 다시 시도해 주세요.', true);
+                return;
+            }
+            
+            try { lucide.createIcons(); } catch (err) { /* 아이콘 로드 실패 시에도 그리드는 표시 */ }
         }
 
         // Category Filter
