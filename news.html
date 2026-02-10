@@ -375,8 +375,16 @@
         // Supabase Configuration
         const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const ADMIN_PASSWORD = '1111';
+
+        /** 모바일 등에서 CDN 로딩 지연 시 대비: Supabase 클라이언트는 사용 직전에 생성 */
+        function getSupabase() {
+            if (typeof window.supabase === 'undefined') return null;
+            if (!window._newsSupabaseClient) {
+                window._newsSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return window._newsSupabaseClient;
+        }
 
         lucide.createIcons();
 
@@ -469,20 +477,25 @@
             }
             
             try {
+                const sb = getSupabase();
+                if (!sb) {
+                    alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                    return;
+                }
                 let imageUrl = null;
                 if (postImage.files && postImage.files[0]) {
                     const file = postImage.files[0];
                     const fileExt = file.name.split('.').pop();
                     const fileName = `news/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-                    const { error: uploadError } = await supabaseClient.storage
+                    const { error: uploadError } = await sb.storage
                         .from('gallery-images')
                         .upload(fileName, file);
                     if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabaseClient.storage.from('gallery-images').getPublicUrl(fileName);
+                    const { data: { publicUrl } } = sb.storage.from('gallery-images').getPublicUrl(fileName);
                     imageUrl = publicUrl;
                 }
                 
-                const { error } = await supabaseClient.from('news_posts').insert({
+                const { error } = await sb.from('news_posts').insert({
                     title: postTitle.value.trim(),
                     category: postCategory.value,
                     description: postDescription.value.trim(),
@@ -512,9 +525,19 @@
             loadingState.classList.remove('hidden');
             emptyState.classList.add('hidden');
             newsGrid.classList.add('hidden');
+
+            const sb = getSupabase();
+            if (!sb) {
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.getElementById('emptyStateTitle').textContent = '연결 오류';
+                document.getElementById('emptyStateDesc').textContent = '데이터베이스 스크립트를 불러오는 중입니다. 잠시 후 아래 버튼으로 다시 시도해 주세요.';
+                document.getElementById('emptyStateRetry').classList.remove('hidden');
+                return;
+            }
             
             try {
-                const { data: posts, error } = await supabaseClient
+                const { data: posts, error } = await sb
                     .from('news_posts')
                     .select('*')
                     .order('post_date', { ascending: false })
@@ -647,9 +670,13 @@
         const detailDelete = document.getElementById('detailDelete');
         detailDelete.addEventListener('click', async () => {
             if (!currentPost || !confirm('정말 삭제하시겠습니까?')) return;
-            
+            const sb = getSupabase();
+            if (!sb) {
+                alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
             try {
-                const { error } = await supabaseClient.from('news_posts').delete().eq('id', currentPost.id);
+                const { error } = await sb.from('news_posts').delete().eq('id', currentPost.id);
                 if (error) throw error;
                 alert('삭제되었습니다.');
                 closeDetail();
@@ -733,22 +760,26 @@
 
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+            const sb = getSupabase();
+            if (!sb) {
+                alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
             try {
                 let imageUrl = currentPost ? currentPost.image_url : null;
                 if (editImage.files && editImage.files[0]) {
                     const file = editImage.files[0];
                     const fileExt = file.name.split('.').pop();
                     const fileName = `news/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-                    const { error: uploadError } = await supabaseClient.storage
+                    const { error: uploadError } = await sb.storage
                         .from('gallery-images')
                         .upload(fileName, file);
                     if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabaseClient.storage.from('gallery-images').getPublicUrl(fileName);
+                    const { data: { publicUrl } } = sb.storage.from('gallery-images').getPublicUrl(fileName);
                     imageUrl = publicUrl;
                 }
                 
-                const { error } = await supabaseClient.from('news_posts').update({
+                const { error } = await sb.from('news_posts').update({
                     title: editTitle.value.trim(),
                     category: editCategory.value,
                     description: editDescription.value.trim(),
@@ -774,16 +805,31 @@
             }
         });
 
+        /** Supabase CDN이 늦게 로드되는 경우(모바일 등)를 위해 잠시 대기 후 초기화 */
         function runInit() {
-            (async function init() {
-                await loadNews();
-                const params = new URLSearchParams(window.location.search);
-                const id = params.get('id');
-                if (id) {
-                    const post = allPosts.find(p => String(p.id) === id);
-                    if (post) openDetail(post);
+            var attempts = 0;
+            var maxAttempts = 25; // 25 * 200ms = 5초
+            function tryInit() {
+                if (getSupabase()) {
+                    (async function init() {
+                        await loadNews();
+                        var params = new URLSearchParams(window.location.search);
+                        var id = params.get('id');
+                        if (id) {
+                            var post = allPosts.find(function(p) { return String(p.id) === id; });
+                            if (post) openDetail(post);
+                        }
+                    })();
+                    return;
                 }
-            })();
+                attempts++;
+                if (attempts < maxAttempts) {
+                    setTimeout(tryInit, 200);
+                } else {
+                    loadNews(); // getSupabase()가 null이어서 emptyState + "다시 시도" 표시
+                }
+            }
+            tryInit();
         }
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', runInit);
