@@ -57,6 +57,8 @@
         
         /* 모바일 가로 넘침 방지 */
         img, video, iframe { max-width: 100%; }
+        /* 모바일에서도 교회소식 그리드 표시 보장 (다른 CSS 덮어쓰기 방지) */
+        #newsGrid.news-grid-visible { display: grid !important; visibility: visible !important; opacity: 1 !important; }
     </style>
 </head>
 <body class="bg-gray-50 overflow-x-hidden">
@@ -247,7 +249,7 @@
         </div>
         
         <!-- News Items -->
-        <div id="newsGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="newsGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-live="polite"></div>
     </section>
 
     <!-- Detail Modal -->
@@ -521,18 +523,44 @@
         let allPosts = [];
         let currentCategory = 'all';
 
-        async function loadNews() {
+        function showLoading() {
             loadingState.classList.remove('hidden');
+            loadingState.style.display = '';
             emptyState.classList.add('hidden');
+            emptyState.style.display = 'none';
             newsGrid.classList.add('hidden');
+            newsGrid.classList.remove('news-grid-visible');
+            newsGrid.style.display = 'none';
+        }
+        function showEmpty(title, desc, showRetry) {
+            loadingState.classList.add('hidden');
+            loadingState.style.display = 'none';
+            emptyState.classList.remove('hidden');
+            emptyState.style.display = '';
+            document.getElementById('emptyStateTitle').textContent = title;
+            document.getElementById('emptyStateDesc').textContent = desc;
+            var retryBtn = document.getElementById('emptyStateRetry');
+            if (showRetry) retryBtn.classList.remove('hidden'); else retryBtn.classList.add('hidden');
+            newsGrid.classList.add('hidden');
+            newsGrid.classList.remove('news-grid-visible');
+            newsGrid.style.display = 'none';
+        }
+        function showGrid() {
+            loadingState.classList.add('hidden');
+            loadingState.style.display = 'none';
+            emptyState.classList.add('hidden');
+            emptyState.style.display = 'none';
+            newsGrid.classList.remove('hidden');
+            newsGrid.classList.add('news-grid-visible');
+            newsGrid.style.display = 'grid';
+        }
+
+        async function loadNews() {
+            showLoading();
 
             const sb = getSupabase();
             if (!sb) {
-                loadingState.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                document.getElementById('emptyStateTitle').textContent = '연결 오류';
-                document.getElementById('emptyStateDesc').textContent = '데이터베이스 스크립트를 불러오는 중입니다. 잠시 후 아래 버튼으로 다시 시도해 주세요.';
-                document.getElementById('emptyStateRetry').classList.remove('hidden');
+                showEmpty('연결 오류', '데이터베이스 스크립트를 불러오는 중입니다. 잠시 후 아래 버튼으로 다시 시도해 주세요.', true);
                 return;
             }
             
@@ -545,15 +573,10 @@
                 
                 if (error) throw error;
                 
-                loadingState.classList.add('hidden');
                 allPosts = posts || [];
                 renderNews();
             } catch (error) {
-                loadingState.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                document.getElementById('emptyStateTitle').textContent = '연결 오류';
-                document.getElementById('emptyStateDesc').textContent = error.message || '소식을 불러올 수 없습니다.';
-                document.getElementById('emptyStateRetry').classList.remove('hidden');
+                showEmpty('연결 오류', error.message || '소식을 불러올 수 없습니다.', true);
             }
         }
         document.getElementById('emptyStateRetry')?.addEventListener('click', () => {
@@ -565,17 +588,18 @@
             const filtered = currentCategory === 'all' ? allPosts : allPosts.filter(p => p.category === currentCategory);
             
             if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                newsGrid.classList.add('hidden');
-                document.getElementById('emptyStateTitle').textContent = '아직 소식이 없습니다';
-                document.getElementById('emptyStateDesc').textContent = '관리자 모드에서 첫 번째 소식을 추가해보세요!';
-                document.getElementById('emptyStateRetry').classList.add('hidden');
+                showEmpty('아직 소식이 없습니다', '관리자 모드에서 첫 번째 소식을 추가해보세요!', false);
                 return;
             }
             
+            loadingState.classList.add('hidden');
+            loadingState.style.display = 'none';
             emptyState.classList.add('hidden');
+            emptyState.style.display = 'none';
             document.getElementById('emptyStateRetry').classList.add('hidden');
             newsGrid.classList.remove('hidden');
+            newsGrid.classList.add('news-grid-visible');
+            newsGrid.style.display = 'grid';
             newsGrid.innerHTML = '';
             
             filtered.forEach((post, index) => {
@@ -607,7 +631,7 @@
                 newsGrid.appendChild(card);
             });
             
-            lucide.createIcons();
+            try { lucide.createIcons(); } catch (e) { /* 아이콘 로드 실패 시에도 그리드는 표시 */ }
         }
 
         // Category Filter
