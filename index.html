@@ -1187,8 +1187,8 @@
                 <div class="relative" data-aos="fade-left">
                     <div class="relative rounded-3xl overflow-hidden shadow-2xl">
                         <img 
-                            src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=2070&auto=format&fit=crop" 
-                            alt="환영" 
+                            src="./images/welcome.jpg"
+                            alt="환영"
                             class="w-full h-[500px] object-cover"
                             loading="lazy"
                         >
@@ -1677,146 +1677,141 @@
         })();
 
         // ============================================
-        // YouTube 최신 영상 자동 로드 (우선 실행)
+        // YouTube 최신 영상 자동 로드
         // ============================================
         const YOUTUBE_CHANNEL_ID = 'UC-EtPdnnt_Sn8uD6skXRqcA';
         let currentVideoId = null;
-        
-        const MAX_RETRIES = 3;
-        const RETRY_DELAY_BASE = 1000;
-        
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-        
-        async function fetchVideoData() {
-            // 1순위: Vercel API (캐싱, 안정적) - Vercel 배포 시 동작
-            const apiUrl = '/api/youtube-latest';
+        const VIDEO_CACHE_KEY = 'onsaemiro_yt_cache';
+        const CACHE_TTL = 10 * 60 * 1000; // 10분
+
+        function getCachedVideo() {
             try {
-                const res = await fetch(apiUrl);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.videoId) return { videoId: data.videoId, title: data.title || '', published: data.published || '' };
-                }
+                var raw = localStorage.getItem(VIDEO_CACHE_KEY);
+                if (!raw) return null;
+                var cached = JSON.parse(raw);
+                if (cached && cached.videoId && (Date.now() - cached.ts < CACHE_TTL)) return cached;
             } catch (_) {}
-            
-            // 2순위: allorigins 프록시 (폴백)
-            const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-            const response = await fetch(proxyUrl);
-            const xmlText = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-            const entries = xmlDoc.getElementsByTagName('entry');
-            if (entries.length > 0) {
-                const e = entries[0];
-                const videoId = e.getElementsByTagName('yt:videoId')[0]?.textContent;
-                const title = e.getElementsByTagName('title')[0]?.textContent || '';
-                const published = e.getElementsByTagName('published')[0]?.textContent || '';
-                if (videoId) return { videoId, title, published };
-            }
             return null;
         }
-        
+        function setCachedVideo(data) {
+            try { localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify({ videoId: data.videoId, title: data.title || '', published: data.published || '', ts: Date.now() })); } catch (_) {}
+        }
+
+        async function fetchVideoData() {
+            // 1순위: Vercel API (서버 캐싱 5분)
+            try {
+                var res = await fetch('/api/youtube-latest');
+                if (res.ok) {
+                    var d = await res.json();
+                    if (d.videoId) return { videoId: d.videoId, title: d.title || '', published: d.published || '' };
+                }
+            } catch (_) {}
+            // 2순위: allorigins 프록시
+            try {
+                var rssUrl = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + YOUTUBE_CHANNEL_ID;
+                var proxyRes = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl));
+                var xmlText = await proxyRes.text();
+                var parser = new DOMParser();
+                var xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                var entries = xmlDoc.getElementsByTagName('entry');
+                if (entries.length > 0) {
+                    var e = entries[0];
+                    var vid = (e.getElementsByTagName('yt:videoId')[0] || {}).textContent;
+                    var t = (e.getElementsByTagName('title')[0] || {}).textContent || '';
+                    var p = (e.getElementsByTagName('published')[0] || {}).textContent || '';
+                    if (vid) return { videoId: vid, title: t, published: p };
+                }
+            } catch (_) {}
+            return null;
+        }
+
         function showVideoSuccess(data) {
-            const thumbnail = document.getElementById('video-thumbnail');
-            const thumbnailImg = document.getElementById('video-thumbnail-img');
-            const loading = document.getElementById('video-loading');
-            const titleEl = document.getElementById('video-title');
-            const dateEl = document.getElementById('video-date');
-            
+            var thumbnail = document.getElementById('video-thumbnail');
+            var thumbnailImg = document.getElementById('video-thumbnail-img');
+            var loading = document.getElementById('video-loading');
+            var titleEl = document.getElementById('video-title');
+            var dateEl = document.getElementById('video-date');
+            if (!thumbnail || !thumbnailImg || !loading) return;
+
             currentVideoId = data.videoId;
-            thumbnailImg.src = `https://img.youtube.com/vi/${data.videoId}/maxresdefault.jpg`;
-            thumbnailImg.onerror = function() { this.src = `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`; };
+            thumbnailImg.src = 'https://img.youtube.com/vi/' + data.videoId + '/maxresdefault.jpg';
+            thumbnailImg.onerror = function() { this.src = 'https://img.youtube.com/vi/' + data.videoId + '/hqdefault.jpg'; };
             if (titleEl) titleEl.textContent = data.title.length > 50 ? data.title.substring(0, 50) + '...' : data.title;
             if (dateEl && data.published) {
-                const d = new Date(data.published);
-                dateEl.textContent = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+                var d = new Date(data.published);
+                dateEl.textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
             }
             loading.classList.add('hidden');
             loading.style.display = 'none';
             thumbnail.classList.remove('hidden');
-            document.getElementById('video-retry-area')?.classList.add('hidden');
-            lucide.createIcons();
+            var retryArea = document.getElementById('video-retry-area');
+            if (retryArea) retryArea.classList.add('hidden');
+            try { lucide.createIcons(); } catch (_) {}
         }
-        
+
         function showRetryButton() {
-            const loading = document.getElementById('video-loading');
-            const retryArea = document.getElementById('video-retry-area');
-            const skeletonText = loading?.querySelector('.text-gray-400');
+            var retryArea = document.getElementById('video-retry-area');
+            var loading = document.getElementById('video-loading');
+            var skeletonText = loading ? loading.querySelector('.text-gray-400') : null;
             if (retryArea) retryArea.classList.remove('hidden');
-            if (skeletonText) skeletonText.textContent = '영상을 불러올 수 없습니다. 다시 시도해 주세요.';
+            if (skeletonText) skeletonText.textContent = '영상을 불러올 수 없습니다.';
         }
-        
-        async function loadLatestVideo(retryCount = 0) {
-            const thumbnail = document.getElementById('video-thumbnail');
-            const thumbnailImg = document.getElementById('video-thumbnail-img');
-            const loading = document.getElementById('video-loading');
-            
+
+        async function loadLatestVideo() {
+            var thumbnail = document.getElementById('video-thumbnail');
+            var loading = document.getElementById('video-loading');
             if (!loading || !thumbnail) return;
-            
+
+            // 캐시가 있으면 즉시 표시
+            var cached = getCachedVideo();
+            if (cached) {
+                showVideoSuccess(cached);
+                // 백그라운드에서 최신 데이터 갱신
+                fetchVideoData().then(function(fresh) {
+                    if (fresh && fresh.videoId !== cached.videoId) {
+                        setCachedVideo(fresh);
+                        showVideoSuccess(fresh);
+                    } else if (fresh) {
+                        setCachedVideo(fresh);
+                    }
+                }).catch(function() {});
+                return;
+            }
+
+            // 캐시 없으면 로딩 표시 후 fetch
             loading.classList.remove('hidden');
             loading.style.display = 'flex';
             thumbnail.classList.add('hidden');
-            document.getElementById('video-retry-area')?.classList.add('hidden');
-            
-            try {
-                const data = await fetchVideoData();
-                if (data) {
-                    showVideoSuccess(data);
-                    return;
-                }
-                throw new Error('No video found');
-            } catch (error) {
-                console.warn('YouTube 로드 실패:', error);
-                if (retryCount < MAX_RETRIES) {
-                    const delay = RETRY_DELAY_BASE * Math.pow(2, retryCount);
-                    await sleep(delay);
-                    return loadLatestVideo(retryCount + 1);
-                }
+            var retryArea = document.getElementById('video-retry-area');
+            if (retryArea) retryArea.classList.add('hidden');
+
+            var data = await fetchVideoData();
+            if (data) {
+                setCachedVideo(data);
+                showVideoSuccess(data);
+            } else {
                 showRetryButton();
             }
         }
-        
-        function fallbackToChannel() {
-            const thumbnail = document.getElementById('video-thumbnail');
-            const thumbnailImg = document.getElementById('video-thumbnail-img');
-            const loading = document.getElementById('video-loading');
-            const retryArea = document.getElementById('video-retry-area');
-            
-            currentVideoId = null;
-            thumbnailImg.src = 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop';
-            loading.classList.add('hidden');
-            loading.style.display = 'none';
-            thumbnail.classList.remove('hidden');
-            if (retryArea) retryArea.classList.add('hidden');
-            thumbnail.onclick = function() { window.open(`https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}`, '_blank'); };
-            lucide.createIcons();
-        }
-        
-        // 썸네일 클릭 시 영상 재생
+
         function playVideo() {
-            const thumbnail = document.getElementById('video-thumbnail');
-            const iframe = document.getElementById('latest-video-iframe');
-            
+            var thumbnail = document.getElementById('video-thumbnail');
+            var iframe = document.getElementById('latest-video-iframe');
             if (currentVideoId) {
-                // 썸네일 숨기고 iframe 표시
                 thumbnail.classList.add('hidden');
                 iframe.classList.remove('hidden');
-                
-                // autoplay 파라미터로 영상 자동 재생
-                iframe.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0`;
+                iframe.src = 'https://www.youtube.com/embed/' + currentVideoId + '?autoplay=1&rel=0';
             } else {
-                // 채널 페이지로 이동
-                window.open(`https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}`, '_blank');
+                window.open('https://www.youtube.com/channel/' + YOUTUBE_CHANNEL_ID, '_blank');
             }
         }
-        
-        // YouTube 로드 즉시 실행 (다른 자원보다 우선)
+
         (function initYouTube() {
-            const thumbnail = document.getElementById('video-thumbnail');
+            var thumbnail = document.getElementById('video-thumbnail');
             if (thumbnail) thumbnail.addEventListener('click', playVideo);
-            const retryBtn = document.getElementById('video-retry-btn');
-            if (retryBtn) retryBtn.addEventListener('click', () => loadLatestVideo(0));
-            loadLatestVideo(0);
+            var retryBtn = document.getElementById('video-retry-btn');
+            if (retryBtn) retryBtn.addEventListener('click', function() { localStorage.removeItem(VIDEO_CACHE_KEY); loadLatestVideo(); });
+            loadLatestVideo();
         })();
         
         // ============================================
