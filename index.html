@@ -1665,12 +1665,14 @@
         const VIDEO_CACHE_KEY = 'onsaemiro_yt_cache';
         const CACHE_TTL = 10 * 60 * 1000; // 10분
 
-        function getCachedVideo() {
+        function getCachedVideo(allowExpired) {
             try {
                 var raw = localStorage.getItem(VIDEO_CACHE_KEY);
                 if (!raw) return null;
                 var cached = JSON.parse(raw);
-                if (cached && cached.videoId && (Date.now() - cached.ts < CACHE_TTL)) return cached;
+                if (!cached || !cached.videoId) return null;
+                if (allowExpired) return cached;
+                if (Date.now() - cached.ts < CACHE_TTL) return cached;
             } catch (_) {}
             return null;
         }
@@ -1678,20 +1680,8 @@
             try { localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify({ videoId: data.videoId, title: data.title || '', published: data.published || '', ts: Date.now() })); } catch (_) {}
         }
 
-        async function fetchVideoData() {
-            // 1순위: Vercel API (서버 캐싱 5분)
+        function parseRssXml(xmlText) {
             try {
-                var res = await fetch('/api/youtube-latest');
-                if (res.ok) {
-                    var d = await res.json();
-                    if (d.videoId) return { videoId: d.videoId, title: d.title || '', published: d.published || '' };
-                }
-            } catch (_) {}
-            // 2순위: allorigins 프록시
-            try {
-                var rssUrl = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + YOUTUBE_CHANNEL_ID;
-                var proxyRes = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl));
-                var xmlText = await proxyRes.text();
                 var parser = new DOMParser();
                 var xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                 var entries = xmlDoc.getElementsByTagName('entry');
@@ -1703,6 +1693,42 @@
                     if (vid) return { videoId: vid, title: t, published: p };
                 }
             } catch (_) {}
+            return null;
+        }
+
+        function fetchWithTimeout(url, ms) {
+            return Promise.race([
+                fetch(url),
+                new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, ms); })
+            ]);
+        }
+
+        async function fetchVideoData() {
+            var rssUrl = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + YOUTUBE_CHANNEL_ID;
+
+            // 1순위: Vercel API (서버 캐싱 5분, 3초 타임아웃)
+            try {
+                var res = await fetchWithTimeout('/api/youtube-latest', 3000);
+                if (res.ok) {
+                    var d = await res.json();
+                    if (d.videoId) return { videoId: d.videoId, title: d.title || '', published: d.published || '' };
+                }
+            } catch (_) {}
+
+            // 2순위: allorigins 프록시 (3초 타임아웃)
+            try {
+                var r1 = await fetchWithTimeout('https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl), 3000);
+                var result = parseRssXml(await r1.text());
+                if (result) return result;
+            } catch (_) {}
+
+            // 3순위: corsproxy.io (3초 타임아웃)
+            try {
+                var r2 = await fetchWithTimeout('https://corsproxy.io/?' + encodeURIComponent(rssUrl), 3000);
+                var result2 = parseRssXml(await r2.text());
+                if (result2) return result2;
+            } catch (_) {}
+
             return null;
         }
 
@@ -1771,7 +1797,13 @@
                 setCachedVideo(data);
                 showVideoSuccess(data);
             } else {
-                showRetryButton();
+                // 모든 소스 실패: 만료된 캐시라도 있으면 표시
+                var stale = getCachedVideo(true);
+                if (stale) {
+                    showVideoSuccess(stale);
+                } else {
+                    showRetryButton();
+                }
             }
         }
 
