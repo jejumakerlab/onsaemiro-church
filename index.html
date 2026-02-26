@@ -675,9 +675,6 @@
                             loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-4 left-4">
-                            <span class="px-3 py-1 bg-brand-green text-white text-xs rounded-full font-medium">주일예배</span>
-                        </div>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-2">주일예배</h3>
@@ -703,9 +700,6 @@
                             loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-4 left-4">
-                            <span class="px-3 py-1 bg-blue-600 text-white text-xs rounded-full font-medium">성경공부</span>
-                        </div>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-2">전교인 수요성경공부</h3>
@@ -731,9 +725,6 @@
                             loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-4 left-4">
-                            <span class="px-3 py-1 bg-purple-600 text-white text-xs rounded-full font-medium">찬양예배</span>
-                        </div>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-2">금요기도회</h3>
@@ -759,9 +750,6 @@
                             loading="lazy"
                         >
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-4 left-4">
-                            <span class="px-3 py-1 bg-amber-600 text-white text-xs rounded-full font-medium">새벽기도회</span>
-                        </div>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-2">새벽기도회</h3>
@@ -1831,85 +1819,72 @@
             loadLatestVideo(0);
         })();
         
-        document.addEventListener('DOMContentLoaded', () => {
-            loadNewsCards();
-        });
-        
         // ============================================
         // 교회소식 로드 (Supabase)
         // ============================================
-        const NEWS_SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
-        const NEWS_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
-        const newsSupabase = window.supabase.createClient(NEWS_SUPABASE_URL, NEWS_SUPABASE_KEY);
-        
-        async function loadNewsCards() {
-            const container = document.getElementById('newsCardsContainer');
-            
-            try {
-                const { data: posts, error } = await newsSupabase
-                    .from('news_posts')
-                    .select('*')
-                    .order('post_date', { ascending: false })
-                    .limit(3);
-                
-                if (error) throw error;
-                
-                if (!posts || posts.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full text-center py-8 text-gray-500">
-                            <p>아직 등록된 소식이 없습니다.</p>
-                            <a href="./news.html" class="text-brand-green hover:underline mt-2 inline-block">교회소식 페이지 바로가기</a>
-                        </div>
-                    `;
+        (function() {
+            var NEWS_SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
+            var NEWS_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
+
+            function getNewsSb() {
+                if (typeof window.supabase === 'undefined') return null;
+                if (!window._indexNewsSb) {
+                    window._indexNewsSb = window.supabase.createClient(NEWS_SUPABASE_URL, NEWS_SUPABASE_KEY);
+                }
+                return window._indexNewsSb;
+            }
+
+            async function loadNewsCards() {
+                var container = document.getElementById('newsCardsContainer');
+                if (!container) return;
+
+                var sb = getNewsSb();
+                if (!sb) {
+                    container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500"><p>소식을 불러올 수 없습니다.</p><a href="./news.html" class="text-brand-green hover:underline mt-2 inline-block">교회소식 페이지에서 확인하기</a></div>';
                     return;
                 }
-                
-                const categoryColors = {
-                    '공지': 'bg-red-100 text-red-600',
-                    '안내': 'bg-blue-100 text-blue-600',
-                    '행사': 'bg-green-100 text-green-600',
-                    '기타': 'bg-gray-100 text-gray-600'
-                };
-                
-                container.innerHTML = posts.map((post, index) => {
-                    const dateFormatted = new Date(post.post_date).toLocaleDateString('ko-KR', { 
-                        year: 'numeric', month: '2-digit', day: '2-digit' 
-                    }).replace(/\. /g, '.').replace(/\.$/, '');
-                    const colorClass = categoryColors[post.category] || categoryColors['기타'];
-                    const hasImage = post.image_url && post.image_url.trim() !== '';
-                    const imageBlock = hasImage ? '<div class="aspect-video overflow-hidden"><img src="' + post.image_url + '" alt="' + (post.title || '').replace(/"/g, '&quot;') + '" class="w-full h-full object-cover" loading="lazy"></div>' : '';
-                    return `
-                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}">
-                            ${imageBlock}
-                            <div class="p-6">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <span class="px-3 py-1 ${colorClass} text-xs rounded-full font-medium">${post.category}</span>
-                                    <span class="text-gray-400 text-sm">${dateFormatted}</span>
-                                </div>
-                                <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-2">${post.title}</h3>
-                                <p class="text-gray-600 text-sm line-clamp-3 mb-4">${post.description || ''}</p>
-                                <a href="./news.html?id=${post.id}" class="text-brand-green font-medium text-sm flex items-center gap-1 hover:underline" aria-label="${(post.title || '').replace(/"/g, '&quot;')} 자세히 보기">
-                                    자세히 보기
-                                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                lucide.createIcons();
-                AOS.refresh();
-                
-            } catch (error) {
-                console.error('교회소식 로드 실패:', error);
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-8 text-gray-500">
-                        <p>소식을 불러올 수 없습니다.</p>
-                        <a href="./news.html" class="text-brand-green hover:underline mt-2 inline-block">교회소식 페이지에서 확인하기</a>
-                    </div>
-                `;
+
+                try {
+                    var result = await sb.from('news_posts').select('*').order('post_date', { ascending: false }).limit(3);
+                    if (result.error) throw result.error;
+                    var posts = result.data || [];
+
+                    if (posts.length === 0) {
+                        container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500"><p>아직 등록된 소식이 없습니다.</p><a href="./news.html" class="text-brand-green hover:underline mt-2 inline-block">교회소식 페이지 바로가기</a></div>';
+                        return;
+                    }
+
+                    var catColors = { '공지': '#fee2e2;color:#dc2626', '안내': '#dbeafe;color:#2563eb', '행사': '#d1fae5;color:#059669', '기타': '#f3f4f6;color:#6b7280' };
+
+                    container.innerHTML = posts.map(function(post) {
+                        var dateStr = '';
+                        try { dateStr = new Date(post.post_date || '').toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, ''); } catch(_) {}
+                        var catStyle = catColors[post.category] || catColors['기타'];
+                        var hasImg = !!(post.image_url && String(post.image_url).trim());
+                        var title = String(post.title || '').replace(/"/g, '&quot;');
+                        var desc = String(post.description || '');
+                        var imgHtml = hasImg ? '<div style="aspect-ratio:16/9;overflow:hidden;"><img src="' + post.image_url + '" alt="' + title + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>' : '';
+                        return '<div style="background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);">' +
+                            imgHtml +
+                            '<div style="padding:1.5rem;">' +
+                            '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;"><span style="padding:.25rem .75rem;font-size:.75rem;border-radius:9999px;font-weight:500;background:' + catStyle + ';">' + (post.category || '') + '</span><span style="color:#9ca3af;font-size:.875rem;">' + dateStr + '</span></div>' +
+                            '<h3 style="font-weight:700;font-size:1.125rem;color:#111827;margin-bottom:.5rem;">' + post.title + '</h3>' +
+                            '<p style="color:#4b5563;font-size:.875rem;margin-bottom:1rem;">' + desc + '</p>' +
+                            '<a href="./news.html?id=' + post.id + '" style="color:#2d5a27;font-weight:500;font-size:.875rem;text-decoration:none;" aria-label="' + title + ' 자세히 보기">자세히 보기 →</a>' +
+                            '</div></div>';
+                    }).join('');
+
+                    try { lucide.createIcons(); } catch(_) {}
+                    try { AOS.refresh(); } catch(_) {}
+
+                } catch (err) {
+                    console.error('교회소식 로드 실패:', err);
+                    container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500"><p>소식을 불러올 수 없습니다.</p><a href="./news.html" class="text-brand-green hover:underline mt-2 inline-block">교회소식 페이지에서 확인하기</a></div>';
+                }
             }
-        }
+
+            loadNewsCards();
+        })();
         });
     </script>
 </body>
