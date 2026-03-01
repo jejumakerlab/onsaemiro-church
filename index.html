@@ -747,25 +747,6 @@
                 </div>
             </div>
             
-            <!-- Online Worship CTA -->
-            <div class="mt-16 text-center" data-aos="fade-up">
-                <div class="inline-block bg-white rounded-3xl shadow-xl p-8 md:p-10">
-                    <div class="flex flex-col md:flex-row items-center gap-6">
-                        <div class="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="youtube" class="w-10 h-10 text-red-600"></i>
-                        </div>
-                        <div class="text-center md:text-left">
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">온라인으로도 함께해요</h3>
-                            <p class="text-gray-600 mb-4">언제 어디서나 예배에 참여하실 수 있습니다</p>
-                            <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                               class="btn-shine inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all duration-300 font-medium shadow-lg shadow-red-600/30">
-                                <i data-lucide="play" class="w-5 h-5"></i>
-                                유튜브 채널 바로가기
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -786,142 +767,57 @@
                 <!-- Main Video -->
                 <div class="lg:col-span-2" data-aos="fade-right">
                     <div class="bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
-                        <div class="aspect-video relative" id="latest-video-container">
-                            <!-- 썸네일 (클릭 시 영상 재생) -->
-                            <div id="video-thumbnail" class="absolute inset-0 cursor-pointer group hidden">
-                                <img 
-                                    id="video-thumbnail-img" 
-                                    src="" 
-                                    alt="최신 설교 영상" 
-                                    class="w-full h-full object-cover"
-                                    loading="lazy"
-                                >
-                                <!-- 재생 버튼 오버레이 -->
-                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-all duration-300">
-                                    <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
-                                        <i data-lucide="play" class="w-10 h-10 text-white ml-1"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- iframe (클릭 후 표시) -->
+                        <div class="aspect-video">
                             <iframe 
-                                id="latest-video-iframe"
-                                class="w-full h-full hidden"
-                                src=""
-                                title="온새미로교회 설교"
+                                src="https://www.youtube.com/embed/videoseries?list=UU-EtPdnnt_Sn8uD6skXRqcA&rel=0"
+                                class="w-full h-full"
+                                title="온새미로교회 최신 설교"
                                 frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 referrerpolicy="strict-origin-when-cross-origin"
                                 allowfullscreen>
                             </iframe>
-                            
-                            <!-- 로딩 상태 (Skeleton UI) -->
-                            <div id="video-loading" class="absolute inset-0 bg-gray-800 flex flex-col items-center justify-center p-6">
-                                <div class="w-full max-w-md space-y-4 animate-pulse">
-                                    <div class="aspect-video bg-gray-700 rounded-lg"></div>
-                                    <div class="h-4 bg-gray-700 rounded w-3/4 mx-auto"></div>
-                                    <div class="h-3 bg-gray-700 rounded w-1/2 mx-auto"></div>
-                                </div>
-                                <p class="text-gray-400 text-sm mt-4">최신 영상을 불러오는 중...</p>
-                                <div id="video-retry-area" class="hidden mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
-                                    <button id="video-retry-btn" type="button" class="px-6 py-2 bg-brand-accent text-white rounded-full font-medium hover:bg-brand-green transition-colors" aria-label="영상 다시 불러오기">
-                                        다시 시도
-                                    </button>
-                                    <a href="https://www.youtube.com/channel/UC-EtPdnnt_Sn8uD6skXRqcA" target="_blank" class="px-6 py-2 border border-gray-500 text-gray-300 rounded-full font-medium hover:bg-gray-700 transition-colors">
-                                        채널 방문
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center gap-2 text-brand-accent text-sm mb-2">
-                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                                <span id="video-date">최신 설교</span>
-                            </div>
-                            <h3 id="video-title" class="text-xl font-bold text-white mb-2">주일 예배 설교</h3>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sermon List -->
-                <div class="space-y-4" data-aos="fade-left">
-                    <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                        <i data-lucide="list" class="w-5 h-5 text-brand-green"></i>
-                        재생목록 바로가기
-                    </h3>
-                    
-                    <!-- Category Cards -->
-                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                       class="block p-5 bg-brand-light rounded-2xl hover:bg-brand-accent/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-brand-green rounded-xl flex items-center justify-center text-white">
-                                    <i data-lucide="sun" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-900">주일 설교</h4>
-                                    <p class="text-sm text-gray-500">매주 일요일 말씀</p>
-                                </div>
-                            </div>
-                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400 group-hover:text-brand-green transition-colors"></i>
+                <!-- Sermon Summary -->
+                <div data-aos="fade-left">
+                    <div class="bg-brand-light rounded-3xl p-6 lg:p-8 h-full flex flex-col">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i data-lucide="file-text" class="w-5 h-5 text-brand-green"></i>
+                            <h3 class="font-bold text-lg text-gray-900">최신 설교 요약</h3>
                         </div>
-                    </a>
 
-                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                       class="block p-5 bg-brand-light rounded-2xl hover:bg-brand-accent/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white">
-                                    <i data-lucide="book-open" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-900">수요 성경공부</h4>
-                                    <p class="text-sm text-gray-500">깊이 있는 말씀 공부</p>
-                                </div>
+                        <!-- 로딩 스켈레톤 -->
+                        <div id="sermon-summary-loading" class="space-y-4 animate-pulse flex-1">
+                            <div class="h-5 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+                            <div class="mt-4 space-y-2">
+                                <div class="h-3 bg-gray-200 rounded w-full"></div>
+                                <div class="h-3 bg-gray-200 rounded w-full"></div>
+                                <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                                <div class="h-3 bg-gray-200 rounded w-4/6"></div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400 group-hover:text-brand-green transition-colors"></i>
                         </div>
-                    </a>
 
-                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                       class="block p-5 bg-brand-light rounded-2xl hover:bg-brand-accent/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-white">
-                                    <i data-lucide="music" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-900">금요 찬양예배</h4>
-                                    <p class="text-sm text-gray-500">찬양과 기도의 시간</p>
-                                </div>
-                            </div>
-                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400 group-hover:text-brand-green transition-colors"></i>
+                        <!-- 요약 내용 -->
+                        <div id="sermon-summary-content" class="hidden flex-1 flex flex-col">
+                            <h4 id="sermon-summary-title" class="text-xl font-bold text-gray-900 mb-2 leading-snug"></h4>
+                            <p id="sermon-summary-date" class="text-sm text-brand-green font-medium mb-4"></p>
+                            <div id="sermon-summary-desc" class="text-gray-600 text-sm leading-relaxed whitespace-pre-line flex-1 overflow-y-auto max-h-64 lg:max-h-none"></div>
                         </div>
-                    </a>
 
-                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                       class="block p-5 bg-brand-light rounded-2xl hover:bg-brand-accent/20 transition-all duration-300 group">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center text-white">
-                                    <i data-lucide="sunrise" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-900">새벽기도회</h4>
-                                    <p class="text-sm text-gray-500">하루를 여는 기도</p>
-                                </div>
-                            </div>
-                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400 group-hover:text-brand-green transition-colors"></i>
+                        <!-- 실패 시 -->
+                        <div id="sermon-summary-error" class="hidden flex-1 flex flex-col items-center justify-center text-center py-8">
+                            <p class="text-gray-500 mb-4">요약을 불러올 수 없습니다.</p>
+                            <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors text-sm">
+                                <i data-lucide="youtube" class="w-4 h-4"></i>
+                                유튜브에서 보기
+                            </a>
                         </div>
-                    </a>
-
-                    <!-- YouTube Channel Button -->
-                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" 
-                       class="btn-shine flex items-center justify-center gap-2 w-full mt-6 px-6 py-4 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-all duration-300 font-medium shadow-lg">
-                        <i data-lucide="youtube" class="w-5 h-5"></i>
-                        유튜브 채널 방문하기
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1658,173 +1554,148 @@
         })();
 
         // ============================================
-        // YouTube 최신 영상 자동 로드
+        // 설교 요약 패널 (오른쪽) - YouTube RSS에서 제목/설명 가져오기
         // ============================================
-        const YOUTUBE_CHANNEL_ID = 'UC-EtPdnnt_Sn8uD6skXRqcA';
-        let currentVideoId = null;
-        const VIDEO_CACHE_KEY = 'onsaemiro_yt_cache';
-        const CACHE_TTL = 10 * 60 * 1000; // 10분
+        (function initSermonSummary() {
+            var CHANNEL_ID = 'UC-EtPdnnt_Sn8uD6skXRqcA';
+            var CACHE_KEY = 'onsaemiro_sermon_cache';
+            var CACHE_TTL = 10 * 60 * 1000;
 
-        function getCachedVideo(allowExpired) {
-            try {
-                var raw = localStorage.getItem(VIDEO_CACHE_KEY);
-                if (!raw) return null;
-                var cached = JSON.parse(raw);
-                if (!cached || !cached.videoId) return null;
-                if (allowExpired) return cached;
-                if (Date.now() - cached.ts < CACHE_TTL) return cached;
-            } catch (_) {}
-            return null;
-        }
-        function setCachedVideo(data) {
-            try { localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify({ videoId: data.videoId, title: data.title || '', published: data.published || '', ts: Date.now() })); } catch (_) {}
-        }
+            var loadingEl = document.getElementById('sermon-summary-loading');
+            var contentEl = document.getElementById('sermon-summary-content');
+            var errorEl = document.getElementById('sermon-summary-error');
+            var titleEl = document.getElementById('sermon-summary-title');
+            var dateEl = document.getElementById('sermon-summary-date');
+            var descEl = document.getElementById('sermon-summary-desc');
 
-        function parseRssXml(xmlText) {
-            try {
-                var parser = new DOMParser();
-                var xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-                var entries = xmlDoc.getElementsByTagName('entry');
-                if (entries.length > 0) {
-                    var e = entries[0];
-                    var vid = (e.getElementsByTagName('yt:videoId')[0] || {}).textContent;
-                    var t = (e.getElementsByTagName('title')[0] || {}).textContent || '';
-                    var p = (e.getElementsByTagName('published')[0] || {}).textContent || '';
-                    if (vid) return { videoId: vid, title: t, published: p };
-                }
-            } catch (_) {}
-            return null;
-        }
+            if (!loadingEl || !contentEl || !errorEl) return;
 
-        function fetchWithTimeout(url, ms) {
-            return Promise.race([
-                fetch(url),
-                new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, ms); })
-            ]);
-        }
-
-        async function fetchVideoData() {
-            var rssUrl = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + YOUTUBE_CHANNEL_ID;
-
-            // 1순위: Vercel API (서버 캐싱 5분, 3초 타임아웃)
-            try {
-                var res = await fetchWithTimeout('/api/youtube-latest', 3000);
-                if (res.ok) {
-                    var d = await res.json();
-                    if (d.videoId) return { videoId: d.videoId, title: d.title || '', published: d.published || '' };
-                }
-            } catch (_) {}
-
-            // 2순위: allorigins 프록시 (3초 타임아웃)
-            try {
-                var r1 = await fetchWithTimeout('https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl), 3000);
-                var result = parseRssXml(await r1.text());
-                if (result) return result;
-            } catch (_) {}
-
-            // 3순위: corsproxy.io (3초 타임아웃)
-            try {
-                var r2 = await fetchWithTimeout('https://corsproxy.io/?' + encodeURIComponent(rssUrl), 3000);
-                var result2 = parseRssXml(await r2.text());
-                if (result2) return result2;
-            } catch (_) {}
-
-            return null;
-        }
-
-        function showVideoSuccess(data) {
-            var thumbnail = document.getElementById('video-thumbnail');
-            var thumbnailImg = document.getElementById('video-thumbnail-img');
-            var loading = document.getElementById('video-loading');
-            var titleEl = document.getElementById('video-title');
-            var dateEl = document.getElementById('video-date');
-            if (!thumbnail || !thumbnailImg || !loading) return;
-
-            currentVideoId = data.videoId;
-            thumbnailImg.src = 'https://img.youtube.com/vi/' + data.videoId + '/maxresdefault.jpg';
-            thumbnailImg.onerror = function() { this.src = 'https://img.youtube.com/vi/' + data.videoId + '/hqdefault.jpg'; };
-            if (titleEl) titleEl.textContent = data.title.length > 50 ? data.title.substring(0, 50) + '...' : data.title;
-            if (dateEl && data.published) {
-                var d = new Date(data.published);
-                dateEl.textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+            function getCached(allowExpired) {
+                try {
+                    var raw = localStorage.getItem(CACHE_KEY);
+                    if (!raw) return null;
+                    var c = JSON.parse(raw);
+                    if (!c || !c.title) return null;
+                    if (allowExpired) return c;
+                    if (Date.now() - c.ts < CACHE_TTL) return c;
+                } catch (_) {}
+                return null;
             }
-            loading.classList.add('hidden');
-            loading.style.display = 'none';
-            thumbnail.classList.remove('hidden');
-            var retryArea = document.getElementById('video-retry-area');
-            if (retryArea) retryArea.classList.add('hidden');
-            try { lucide.createIcons(); } catch (_) {}
-        }
 
-        function showRetryButton() {
-            var retryArea = document.getElementById('video-retry-area');
-            var loading = document.getElementById('video-loading');
-            var skeletonText = loading ? loading.querySelector('.text-gray-400') : null;
-            if (retryArea) retryArea.classList.remove('hidden');
-            if (skeletonText) skeletonText.textContent = '영상을 불러올 수 없습니다.';
-        }
+            function setCache(data) {
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        title: data.title || '',
+                        published: data.published || '',
+                        description: data.description || '',
+                        ts: Date.now()
+                    }));
+                } catch (_) {}
+            }
 
-        async function loadLatestVideo() {
-            var thumbnail = document.getElementById('video-thumbnail');
-            var loading = document.getElementById('video-loading');
-            if (!loading || !thumbnail) return;
+            function fetchTimeout(url, ms) {
+                return Promise.race([
+                    fetch(url),
+                    new Promise(function(_, rej) { setTimeout(function() { rej(new Error('timeout')); }, ms); })
+                ]);
+            }
 
-            // 캐시가 있으면 즉시 표시
-            var cached = getCachedVideo();
-            if (cached) {
-                showVideoSuccess(cached);
-                // 백그라운드에서 최신 데이터 갱신
-                fetchVideoData().then(function(fresh) {
-                    if (fresh && fresh.videoId !== cached.videoId) {
-                        setCachedVideo(fresh);
-                        showVideoSuccess(fresh);
-                    } else if (fresh) {
-                        setCachedVideo(fresh);
+            function parseRss(xmlText) {
+                try {
+                    var entryMatch = xmlText.match(/<entry>([\s\S]*?)<\/entry>/);
+                    if (!entryMatch) return null;
+                    var entry = entryMatch[1];
+                    var tM = entry.match(/<title>([^<]+)<\/title>/);
+                    var pM = entry.match(/<published>([^<]+)<\/published>/);
+                    var dM = entry.match(/<media:description>([\s\S]*?)<\/media:description>/);
+                    var t = tM ? tM[1].trim() : '';
+                    if (t) return { title: t, published: pM ? pM[1].trim() : '', description: dM ? dM[1].trim() : '' };
+                } catch (_) {}
+                return null;
+            }
+
+            function fetchProxy(rssUrl, proxyUrl, ms) {
+                return fetchTimeout(proxyUrl, ms).then(function(r) {
+                    return r.text();
+                }).then(function(txt) {
+                    return parseRss(txt);
+                });
+            }
+
+            async function fetchSummary() {
+                var rssUrl = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID;
+
+                try {
+                    var res = await fetchTimeout('/api/youtube-latest', 3000);
+                    if (res.ok) {
+                        var d = await res.json();
+                        if (d.title) return { title: d.title, published: d.published || '', description: d.description || '' };
                     }
-                }).catch(function() {});
-                return;
+                } catch (_) {}
+
+                var proxies = [
+                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl),
+                    'https://corsproxy.io/?' + encodeURIComponent(rssUrl),
+                    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(rssUrl)
+                ];
+                try {
+                    var result = await Promise.any(proxies.map(function(p) {
+                        return fetchProxy(rssUrl, p, 5000).then(function(r) {
+                            if (!r) throw new Error('empty');
+                            return r;
+                        });
+                    }));
+                    if (result) return result;
+                } catch (_) {}
+
+                return null;
             }
 
-            // 캐시 없으면 로딩 표시 후 fetch
-            loading.classList.remove('hidden');
-            loading.style.display = 'flex';
-            thumbnail.classList.add('hidden');
-            var retryArea = document.getElementById('video-retry-area');
-            if (retryArea) retryArea.classList.add('hidden');
+            function showSummary(data) {
+                if (titleEl) titleEl.textContent = data.title;
+                if (dateEl && data.published) {
+                    try {
+                        var d = new Date(data.published);
+                        dateEl.textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+                    } catch (_) { dateEl.textContent = ''; }
+                }
+                if (descEl) descEl.textContent = data.description || '';
+                loadingEl.classList.add('hidden');
+                errorEl.classList.add('hidden');
+                contentEl.classList.remove('hidden');
+            }
 
-            var data = await fetchVideoData();
-            if (data) {
-                setCachedVideo(data);
-                showVideoSuccess(data);
-            } else {
-                // 모든 소스 실패: 만료된 캐시라도 있으면 표시
-                var stale = getCachedVideo(true);
-                if (stale) {
-                    showVideoSuccess(stale);
+            function showError() {
+                loadingEl.classList.add('hidden');
+                contentEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+            }
+
+            async function init() {
+                var cached = getCached();
+                if (cached) {
+                    showSummary(cached);
+                    fetchSummary().then(function(fresh) {
+                        if (fresh) { setCache(fresh); showSummary(fresh); }
+                    }).catch(function() {});
+                    return;
+                }
+
+                var data = await fetchSummary();
+                if (data) {
+                    setCache(data);
+                    showSummary(data);
                 } else {
-                    showRetryButton();
+                    var stale = getCached(true);
+                    if (stale) {
+                        showSummary(stale);
+                    } else {
+                        showError();
+                    }
                 }
             }
-        }
 
-        function playVideo() {
-            var thumbnail = document.getElementById('video-thumbnail');
-            var iframe = document.getElementById('latest-video-iframe');
-            if (currentVideoId) {
-                thumbnail.classList.add('hidden');
-                iframe.classList.remove('hidden');
-                iframe.src = 'https://www.youtube.com/embed/' + currentVideoId + '?autoplay=1&rel=0';
-            } else {
-                window.open('https://www.youtube.com/channel/' + YOUTUBE_CHANNEL_ID, '_blank');
-            }
-        }
-
-        (function initYouTube() {
-            var thumbnail = document.getElementById('video-thumbnail');
-            if (thumbnail) thumbnail.addEventListener('click', playVideo);
-            var retryBtn = document.getElementById('video-retry-btn');
-            if (retryBtn) retryBtn.addEventListener('click', function() { localStorage.removeItem(VIDEO_CACHE_KEY); loadLatestVideo(); });
-            loadLatestVideo();
+            init();
         })();
         
         // ============================================

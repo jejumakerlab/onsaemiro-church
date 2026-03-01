@@ -23,13 +23,13 @@ export default async function handler(req, res) {
 
     const xmlText = await response.text();
     const videoId = extractVideoIdFromRss(xmlText);
-    const { title, published } = extractMetadataFromRss(xmlText);
+    const { title, published, description } = extractMetadataFromRss(xmlText);
 
     if (!videoId) {
       return res.status(404).json({ error: 'No video found' });
     }
 
-    return res.status(200).json({ videoId, title, published });
+    return res.status(200).json({ videoId, title, published, description });
   } catch (error) {
     console.error('YouTube API error:', error.message);
     return res.status(500).json({ error: error.message });
@@ -47,8 +47,10 @@ function extractMetadataFromRss(xmlText) {
   const entryXml = entryMatch ? entryMatch[0] : xmlText;
   const titleMatch = entryXml.match(/<title>([^<]+)<\/title>/);
   const publishedMatch = entryXml.match(/<published>([^<]+)<\/published>/);
+  const descMatch = entryXml.match(/<media:description>([\s\S]*?)<\/media:description>/);
   return {
     title: titleMatch ? titleMatch[1].trim() : '',
-    published: publishedMatch ? publishedMatch[1].trim() : ''
+    published: publishedMatch ? publishedMatch[1].trim() : '',
+    description: descMatch ? descMatch[1].trim() : ''
   };
 }
