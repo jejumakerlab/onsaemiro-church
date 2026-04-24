@@ -421,8 +421,8 @@
         
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Admin Password
-        const ADMIN_PASSWORD = '1111';
+        // Admin password is verified in RPC
+        let currentAdminPassword = null;
         
         // ============================================
         // Initialize
@@ -471,19 +471,22 @@
         const adminButtons = document.getElementById('adminButtons');
         let isAdminMode = false;
 
-        adminToggle.addEventListener('click', () => {
+        adminToggle.addEventListener('click', async () => {
             if (!isAdminMode) {
-                // 비밀번호 확인
                 const password = prompt('관리자 비밀번호를 입력하세요:');
-                if (password !== ADMIN_PASSWORD) {
-                    if (password !== null) {
-                        alert('비밀번호가 올바르지 않습니다.');
-                    }
+                if (password === null) return;
+                const { data, error } = await supabaseClient.rpc('admin_verify_password', {
+                    p_admin_password: password
+                });
+                if (error || data !== true) {
+                    alert('비밀번호가 올바르지 않습니다.');
                     return;
                 }
+                currentAdminPassword = password;
             }
             
             isAdminMode = !isAdminMode;
+            if (!isAdminMode) currentAdminPassword = null;
             adminPanel.classList.toggle('hidden');
             adminToggle.innerHTML = isAdminMode 
                 ? '<i data-lucide="x" class="w-5 h-5"></i>'
@@ -581,17 +584,18 @@
             
             try {
                 // 1. Create post in database
-                const { data: post, error: postError } = await supabaseClient
-                    .from('gallery_posts')
-                    .insert({
-                        title: postTitle.value.trim(),
-                        description: postDescription.value.trim(),
-                        post_date: postDate.value
-                    })
-                    .select()
-                    .single();
+                if (!currentAdminPassword) {
+                    throw new Error('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                }
+                const { data: post, error: postError } = await supabaseClient.rpc('admin_gallery_posts_insert', {
+                    p_admin_password: currentAdminPassword,
+                    p_title: postTitle.value.trim(),
+                    p_description: postDescription.value.trim(),
+                    p_post_date: postDate.value
+                });
                 
                 if (postError) throw postError;
+                if (!post || !post.id) throw new Error('게시물 생성에 실패했습니다.');
                 
                 // 2. Upload images to storage
                 const totalFiles = selectedFiles.length;
@@ -613,13 +617,12 @@
                         .getPublicUrl(fileName);
                     
                     // 3. Save image reference to database
-                    const { error: imageError } = await supabaseClient
-                        .from('gallery_images')
-                        .insert({
-                            post_id: post.id,
-                            image_url: publicUrl,
-                            display_order: uploadedCount
-                        });
+                    const { error: imageError } = await supabaseClient.rpc('admin_gallery_images_insert', {
+                        p_admin_password: currentAdminPassword,
+                        p_post_id: String(post.id),
+                        p_image_url: publicUrl,
+                        p_display_order: uploadedCount
+                    });
                     
                     if (imageError) throw imageError;
                     
@@ -859,10 +862,13 @@
                 }
                 
                 // Delete post (images will be cascade deleted)
-                const { error } = await supabaseClient
-                    .from('gallery_posts')
-                    .delete()
-                    .eq('id', currentPost.id);
+                if (!currentAdminPassword) {
+                    throw new Error('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                }
+                const { error } = await supabaseClient.rpc('admin_gallery_posts_delete', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(currentPost.id)
+                });
                 
                 if (error) throw error;
                 
@@ -929,14 +935,17 @@
             }
             
             try {
-                const { error } = await supabaseClient
-                    .from('gallery_posts')
-                    .update({
-                        title: title,
-                        description: description,
-                        post_date: postDate
-                    })
-                    .eq('id', postId);
+                if (!currentAdminPassword) {
+                    throw new Error('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                }
+
+                const { error } = await supabaseClient.rpc('admin_gallery_posts_update', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(postId),
+                    p_title: title,
+                    p_description: description,
+                    p_post_date: postDate
+                });
                 
                 if (error) throw error;
                 

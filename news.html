@@ -428,7 +428,7 @@
         // Supabase Configuration
         const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
-        const ADMIN_PASSWORD = '1111';
+        let currentAdminPassword = null;
 
         /** 모바일 등에서 CDN 로딩 지연 시 대비: Supabase 클라이언트는 사용 직전에 생성 */
         function getSupabase() {
@@ -467,15 +467,26 @@
         const adminButtons = document.getElementById('adminButtons');
         let isAdminMode = false;
 
-        adminToggle.addEventListener('click', () => {
+        adminToggle.addEventListener('click', async () => {
             if (!isAdminMode) {
                 const password = prompt('관리자 비밀번호를 입력하세요:');
-                if (password !== ADMIN_PASSWORD) {
-                    if (password !== null) alert('비밀번호가 올바르지 않습니다.');
+                if (password === null) return;
+                const sb = getSupabase();
+                if (!sb) {
+                    alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
                     return;
                 }
+                const { data, error } = await sb.rpc('admin_verify_password', {
+                    p_admin_password: password
+                });
+                if (error || data !== true) {
+                    alert('비밀번호가 올바르지 않습니다.');
+                    return;
+                }
+                currentAdminPassword = password;
             }
             isAdminMode = !isAdminMode;
+            if (!isAdminMode) currentAdminPassword = null;
             adminPanel.classList.toggle('hidden');
             adminToggle.innerHTML = isAdminMode ? '<i data-lucide="x" class="w-5 h-5"></i>' : '<i data-lucide="settings" class="w-5 h-5"></i>';
             if (isAdminMode) adminButtons.classList.remove('hidden');
@@ -548,13 +559,19 @@
                     imageUrl = publicUrl;
                 }
                 
-                const { error } = await sb.from('news_posts').insert({
-                    title: postTitle.value.trim(),
-                    category: postCategory.value,
-                    description: postDescription.value.trim(),
-                    content: postContent.value.trim(),
-                    post_date: postDate.value,
-                    image_url: imageUrl
+                if (!currentAdminPassword) {
+                    alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                    return;
+                }
+
+                const { error } = await sb.rpc('admin_news_posts_insert', {
+                    p_admin_password: currentAdminPassword,
+                    p_title: postTitle.value.trim(),
+                    p_category: postCategory.value,
+                    p_description: postDescription.value.trim(),
+                    p_content: postContent.value.trim(),
+                    p_post_date: postDate.value,
+                    p_image_url: imageUrl
                 });
                 
                 if (error) throw error;
@@ -767,7 +784,14 @@
                 return;
             }
             try {
-                const { error } = await sb.from('news_posts').delete().eq('id', currentPost.id);
+                if (!currentAdminPassword) {
+                    alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                    return;
+                }
+                const { error } = await sb.rpc('admin_news_posts_delete', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(currentPost.id)
+                });
                 if (error) throw error;
                 alert('삭제되었습니다.');
                 closeDetail();
@@ -870,14 +894,21 @@
                     imageUrl = publicUrl;
                 }
                 
-                const { error } = await sb.from('news_posts').update({
-                    title: editTitle.value.trim(),
-                    category: editCategory.value,
-                    description: editDescription.value.trim(),
-                    content: editContent.value.trim(),
-                    post_date: editDate.value,
-                    image_url: imageUrl
-                }).eq('id', editPostId.value);
+                if (!currentAdminPassword) {
+                    alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                    return;
+                }
+
+                const { error } = await sb.rpc('admin_news_posts_update', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(editPostId.value),
+                    p_title: editTitle.value.trim(),
+                    p_category: editCategory.value,
+                    p_description: editDescription.value.trim(),
+                    p_content: editContent.value.trim(),
+                    p_post_date: editDate.value,
+                    p_image_url: imageUrl
+                });
                 
                 if (error) throw error;
                 alert('수정되었습니다.');
