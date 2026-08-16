@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설교말씀 | 온새미로교회</title>
+    <link rel="icon" type="image/svg+xml" href="./chicon.svg">
+    <link rel="stylesheet" href="./css/output.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { overflow-x: hidden; }
+        body { font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #2d5a27; border-radius: 4px; }
+
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .spinner {
+            border: 3px solid #e8f0e6;
+            border-top: 3px solid #2d5a27;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        img, video, iframe { max-width: 100%; }
+
+        #sermonGrid.sermon-grid-visible { display: grid !important; visibility: visible !important; opacity: 1 !important; }
+        #sermonGrid .sermon-card {
+            background: #fff !important;
+            color: #111827 !important;
+            padding: 1.5rem !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1) !important;
+            cursor: pointer !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            overflow: visible !important;
+        }
+        #sermonGrid .sermon-card-thumb {
+            width: 100% !important;
+            aspect-ratio: 16/9 !important;
+            object-fit: cover !important;
+            border-radius: 0.75rem !important;
+            margin-bottom: 1rem !important;
+            display: block !important;
+        }
+        #sermonGrid .sermon-card-title {
+            font-size: 1.125rem !important;
+            font-weight: 700 !important;
+            color: #111827 !important;
+            margin-bottom: 0.75rem !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        #sermonGrid .sermon-card-desc {
+            font-size: 0.875rem !important;
+            color: #4b5563 !important;
+            margin-bottom: 1rem !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        #sermonGrid .sermon-card-more {
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            color: #2d5a27 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .video-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background: #000;
+        }
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-x-hidden">
+    <nav class="fixed w-full z-50 bg-white shadow-sm overflow-x-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+            <div class="flex justify-between items-center h-20">
+                <a href="./index.html" class="flex items-center gap-3 group">
+                    <img src="./logo_onsaech.svg" alt="온새미로교회 로고" class="h-14 w-auto transition-transform duration-300 group-hover:scale-105" loading="eager">
+                </a>
+
+                <div class="hidden md:flex space-x-1 items-center">
+                    <a href="./index.html#about" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">교회소개</a>
+                    <a href="./index.html#worship" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배안내</a>
+                    <a href="./index.html#sermon" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">예배실황</a>
+                    <a href="./sermon.html" class="nav-link px-4 py-2 rounded-full bg-brand-light text-brand-green font-medium transition-all duration-300">설교말씀</a>
+                    <a href="./news.html" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">교회소식</a>
+                    <a href="./gallery.html" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">갤러리</a>
+                    <a href="./index.html#newcomer" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">새가족 안내</a>
+                    <a href="./index.html#location" class="nav-link px-4 py-2 rounded-full text-gray-600 hover:text-brand-green hover:bg-brand-light font-medium transition-all duration-300">오시는 길</a>
+                    <div class="flex items-center space-x-2 pl-4 ml-4 border-l border-gray-200">
+                        <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" rel="noopener noreferrer" aria-label="인스타그램"
+                           class="p-2 rounded-full text-gray-500 hover:text-pink-500 hover:bg-gray-100 transition-all duration-300">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" rel="noopener noreferrer" aria-label="유튜브"
+                           class="p-2 rounded-full text-gray-500 hover:text-red-600 hover:bg-gray-100 transition-all duration-300">
+                            <i data-lucide="youtube" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors" aria-label="메뉴 열기">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="mobileMenu" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobileMenuBackdrop"></div>
+        <div class="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300" id="mobileMenuPanel">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-8">
+                    <span class="text-lg font-bold text-gray-900">메뉴</span>
+                    <button id="mobileMenuClose" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="메뉴 닫기">
+                        <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <a href="./index.html#about" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="church" class="w-5 h-5"></i><span class="font-medium">교회소개</span>
+                    </a>
+                    <a href="./index.html#worship" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="book-open" class="w-5 h-5"></i><span class="font-medium">예배안내</span>
+                    </a>
+                    <a href="./index.html#sermon" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="video" class="w-5 h-5"></i><span class="font-medium">예배실황</span>
+                    </a>
+                    <a href="./sermon.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl bg-brand-light text-brand-green transition-all duration-300">
+                        <i data-lucide="scroll-text" class="w-5 h-5"></i><span class="font-medium">설교말씀</span>
+                    </a>
+                    <a href="./news.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="newspaper" class="w-5 h-5"></i><span class="font-medium">교회소식</span>
+                    </a>
+                    <a href="./gallery.html" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="images" class="w-5 h-5"></i><span class="font-medium">갤러리</span>
+                    </a>
+                    <a href="./index.html#newcomer" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i><span class="font-medium">새가족 안내</span>
+                    </a>
+                    <a href="./index.html#location" class="mobile-menu-link flex items-center gap-3 p-4 rounded-xl text-gray-700 hover:bg-brand-light hover:text-brand-green transition-all duration-300">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i><span class="font-medium">오시는 길</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="pt-32 pb-16 bg-gradient-to-br from-brand-green to-brand-green/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-white">
+                <div class="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full mb-6">
+                    <i data-lucide="scroll-text" class="w-4 h-4"></i>
+                    <span class="text-sm font-medium tracking-wide">Sermon Messages</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4">설교 말씀</h1>
+                <p class="text-lg text-white/80 max-w-2xl mx-auto">주님의 말씀을 다시 듣고 묵상하는 공간입니다</p>
+            </div>
+        </div>
+    </section>
+
+    <button id="adminToggle" class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-300 opacity-50 hover:opacity-100" aria-label="관리자 설정">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+    </button>
+
+    <div id="adminPanel" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-2 border-brand-green">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-brand-green rounded-xl flex items-center justify-center">
+                    <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">새 설교말씀 추가</h2>
+            </div>
+
+            <form id="uploadForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-2">제목 *</label>
+                            <input type="text" id="postTitle" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                        <div>
+                            <label for="postDate" class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                            <input type="date" id="postDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        </div>
+                        <div>
+                            <label for="postYoutubeUrl" class="block text-sm font-medium text-gray-700 mb-2">유튜브 영상 링크 *</label>
+                            <input type="url" id="postYoutubeUrl" required placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                            <p class="text-xs text-gray-500 mt-2">youtube.com 또는 youtu.be 링크를 입력하세요.</p>
+                        </div>
+                        <div id="postYoutubePreview" class="hidden rounded-xl overflow-hidden border border-gray-200">
+                            <img id="postYoutubePreviewImg" src="" alt="유튜브 썸네일 미리보기" class="w-full aspect-video object-cover">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="postContent" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                        <textarea id="postContent" rows="12" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none" placeholder="설교 요약 또는 말씀 내용을 입력하세요"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="clearForm" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">초기화</button>
+                    <button type="submit" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="check" class="w-5 h-5"></i>설교말씀 추가
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+            <div class="spinner mb-4"></div>
+            <p class="text-gray-600">설교말씀을 불러오는 중...</p>
+        </div>
+
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="scroll-text" class="w-12 h-12 text-gray-400"></i>
+            </div>
+            <h3 id="emptyStateTitle" class="text-xl font-bold text-gray-900 mb-2">아직 설교말씀이 없습니다</h3>
+            <p id="emptyStateDesc" class="text-gray-600 mb-4">관리자 모드에서 첫 번째 설교말씀을 추가해보세요!</p>
+            <button id="emptyStateRetry" type="button" class="hidden px-6 py-2 bg-brand-green text-white rounded-full font-medium hover:bg-brand-green/90 transition-colors" aria-label="다시 시도">다시 시도</button>
+        </div>
+
+        <div id="sermonGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-live="polite"></div>
+    </section>
+
+    <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="detailBackdrop"></div>
+        <div class="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <button id="detailClose" class="absolute top-4 right-4 z-10 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors" aria-label="닫기">
+                <i data-lucide="x" class="w-5 h-5 text-gray-700"></i>
+            </button>
+
+            <div class="p-8">
+                <div id="detailVideoWrap" class="hidden mb-6">
+                    <div class="video-embed">
+                        <iframe id="detailVideo" src="" title="설교 영상" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-sm text-gray-500" id="detailDate"></span>
+                </div>
+                <h2 id="detailTitle" class="text-2xl md:text-3xl font-bold text-gray-900 mb-6"></h2>
+                <div id="detailContent" class="prose prose-green max-w-none text-gray-600 whitespace-pre-wrap"></div>
+
+                <div id="adminButtons" class="hidden mt-8 pt-6 border-t flex gap-2">
+                    <button id="detailEdit" class="px-4 py-2 bg-brand-green hover:bg-brand-green/90 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>수정
+                    </button>
+                    <button id="detailDelete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" id="editBackdrop"></div>
+        <div class="relative max-w-lg w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">설교말씀 수정</h3>
+                    <button id="editClose" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors" aria-label="닫기">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editPostId">
+                    <div>
+                        <label for="editTitle" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
+                        <input type="text" id="editTitle" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label for="editDate" class="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                        <input type="date" id="editDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label for="editYoutubeUrl" class="block text-sm font-medium text-gray-700 mb-2">유튜브 영상 링크</label>
+                        <input type="url" id="editYoutubeUrl" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label for="editContent" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                        <textarea id="editContent" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all resize-none"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" id="editCancel" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium text-gray-700 transition-colors">취소</button>
+                        <button type="submit" class="px-6 py-3 bg-brand-green hover:bg-brand-green/90 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5"></i>저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <img src="./logo_onsaech_white.svg" alt="온새미로교회" class="h-10" loading="lazy">
+                    <span class="text-gray-400">© 2026 온새미로교회. All rights reserved.</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://www.instagram.com/onsaemiro_community/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors">
+                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@제주온새미로교회" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <i data-lucide="youtube" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        const SUPABASE_URL = 'https://vqpucsocvbxkjoqyczof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxcHVjc29jdmJ4a2pvcXljem9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NDkyOTYsImV4cCI6MjA4NTIyNTI5Nn0.VqBkhKl2h1mw12SY8QxN_AfB8vZwJiw6j92mEOSLVgs';
+        let currentAdminPassword = null;
+
+        function getSupabase() {
+            if (typeof window.supabase === 'undefined') return null;
+            if (!window._sermonSupabaseClient) {
+                window._sermonSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return window._sermonSupabaseClient;
+        }
+
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            const value = String(url).trim();
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+                /^([a-zA-Z0-9_-]{11})$/
+            ];
+            for (const pattern of patterns) {
+                const match = value.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function getYouTubeThumbnail(videoId) {
+            return 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg';
+        }
+
+        function getYouTubeEmbedUrl(videoId) {
+            return 'https://www.youtube.com/embed/' + videoId + '?rel=0';
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        lucide.createIcons();
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('hidden');
+            setTimeout(() => mobileMenuPanel.classList.remove('translate-x-full'), 10);
+        });
+
+        function closeMobileMenu() {
+            mobileMenuPanel.classList.add('translate-x-full');
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        }
+
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+
+        const adminToggle = document.getElementById('adminToggle');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminButtons = document.getElementById('adminButtons');
+        let isAdminMode = false;
+
+        adminToggle.addEventListener('click', async () => {
+            if (!isAdminMode) {
+                const password = prompt('관리자 비밀번호를 입력하세요:');
+                if (password === null) return;
+                const sb = getSupabase();
+                if (!sb) {
+                    alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                    return;
+                }
+                const { data, error } = await sb.rpc('admin_verify_password', {
+                    p_admin_password: password
+                });
+                if (error || data !== true) {
+                    alert('비밀번호가 올바르지 않습니다.');
+                    return;
+                }
+                currentAdminPassword = password;
+            }
+            isAdminMode = !isAdminMode;
+            if (!isAdminMode) currentAdminPassword = null;
+            adminPanel.classList.toggle('hidden');
+            adminToggle.innerHTML = isAdminMode ? '<i data-lucide="x" class="w-5 h-5"></i>' : '<i data-lucide="settings" class="w-5 h-5"></i>';
+            if (isAdminMode) adminButtons.classList.remove('hidden');
+            else adminButtons.classList.add('hidden');
+            lucide.createIcons();
+        });
+
+        const uploadForm = document.getElementById('uploadForm');
+        const postTitle = document.getElementById('postTitle');
+        const postDate = document.getElementById('postDate');
+        const postContent = document.getElementById('postContent');
+        const postYoutubeUrl = document.getElementById('postYoutubeUrl');
+        const postYoutubePreview = document.getElementById('postYoutubePreview');
+        const postYoutubePreviewImg = document.getElementById('postYoutubePreviewImg');
+        const clearFormBtn = document.getElementById('clearForm');
+
+        postDate.valueAsDate = new Date();
+
+        function updateYoutubePreview(input, previewWrap, previewImg) {
+            const videoId = extractYouTubeId(input.value);
+            if (videoId) {
+                previewImg.src = getYouTubeThumbnail(videoId);
+                previewWrap.classList.remove('hidden');
+            } else {
+                previewWrap.classList.add('hidden');
+                previewImg.removeAttribute('src');
+            }
+        }
+
+        postYoutubeUrl.addEventListener('input', () => {
+            updateYoutubePreview(postYoutubeUrl, postYoutubePreview, postYoutubePreviewImg);
+        });
+
+        clearFormBtn.addEventListener('click', () => {
+            uploadForm.reset();
+            postDate.valueAsDate = new Date();
+            postYoutubePreview.classList.add('hidden');
+            postYoutubePreviewImg.removeAttribute('src');
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!postTitle.value.trim()) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            if (!extractYouTubeId(postYoutubeUrl.value)) {
+                alert('올바른 유튜브 영상 링크를 입력해주세요.');
+                return;
+            }
+            if (!currentAdminPassword) {
+                alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
+
+            try {
+                const sb = getSupabase();
+                if (!sb) {
+                    alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                    return;
+                }
+
+                const { error } = await sb.rpc('admin_sermon_posts_insert', {
+                    p_admin_password: currentAdminPassword,
+                    p_title: postTitle.value.trim(),
+                    p_content: postContent.value.trim(),
+                    p_post_date: postDate.value,
+                    p_youtube_url: postYoutubeUrl.value.trim()
+                });
+
+                if (error) throw error;
+
+                alert('설교말씀이 추가되었습니다!');
+                clearFormBtn.click();
+                loadSermons();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        const sermonGrid = document.getElementById('sermonGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        let allPosts = [];
+
+        function showLoading() {
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            sermonGrid.classList.add('hidden');
+            sermonGrid.classList.remove('sermon-grid-visible');
+            sermonGrid.style.display = 'none';
+        }
+
+        function showEmpty(title, desc, showRetry) {
+            loadingState.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            document.getElementById('emptyStateTitle').textContent = title;
+            document.getElementById('emptyStateDesc').textContent = desc;
+            const retryBtn = document.getElementById('emptyStateRetry');
+            if (showRetry) retryBtn.classList.remove('hidden');
+            else retryBtn.classList.add('hidden');
+            sermonGrid.classList.add('hidden');
+            sermonGrid.classList.remove('sermon-grid-visible');
+            sermonGrid.style.display = 'none';
+        }
+
+        function showGrid() {
+            loadingState.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            sermonGrid.classList.remove('hidden');
+            sermonGrid.classList.add('sermon-grid-visible');
+            sermonGrid.style.display = 'grid';
+        }
+
+        async function loadSermons() {
+            showLoading();
+
+            const sb = getSupabase();
+            if (!sb) {
+                showEmpty('연결 오류', '데이터베이스 스크립트를 불러오는 중입니다. 잠시 후 아래 버튼으로 다시 시도해 주세요.', true);
+                return;
+            }
+
+            try {
+                const { data: posts, error } = await sb
+                    .from('sermon_posts')
+                    .select('*')
+                    .order('post_date', { ascending: false })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allPosts = posts || [];
+                renderSermons();
+            } catch (error) {
+                showEmpty('연결 오류', error.message || '설교말씀을 불러올 수 없습니다.', true);
+            }
+        }
+
+        document.getElementById('emptyStateRetry')?.addEventListener('click', () => {
+            document.getElementById('emptyStateRetry').classList.add('hidden');
+            loadSermons();
+        });
+
+        function renderSermons() {
+            if (allPosts.length === 0) {
+                showEmpty('아직 설교말씀이 없습니다', '관리자 모드에서 첫 번째 설교말씀을 추가해보세요!', false);
+                return;
+            }
+
+            showGrid();
+            sermonGrid.innerHTML = '';
+
+            let appended = 0;
+            allPosts.forEach((post) => {
+                try {
+                    if (!post || !post.title) return;
+                    const videoId = extractYouTubeId(post.youtube_url);
+                    if (!videoId) return;
+
+                    let dateFormatted = '';
+                    try {
+                        dateFormatted = new Date(post.post_date || '').toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        }).replace(/\. /g, '.').replace(/\.$/, '');
+                    } catch (_) {
+                        dateFormatted = '';
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'sermon-card';
+                    card.innerHTML =
+                        '<img class="sermon-card-thumb" src="' + getYouTubeThumbnail(videoId) + '" alt="' + escapeHtml(post.title) + ' 썸네일" loading="lazy">' +
+                        '<div class="flex items-center gap-3 mb-3"><span class="text-sm text-gray-400">' + escapeHtml(dateFormatted) + '</span></div>' +
+                        '<h3 class="sermon-card-title">' + escapeHtml(post.title) + '</h3>' +
+                        '<p class="sermon-card-desc">' + escapeHtml(post.content || '') + '</p>' +
+                        '<div class="sermon-card-more">자세히 보기 →</div>';
+
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('aria-label', (post.title || '설교말씀') + ' 자세히 보기');
+                    card.addEventListener('click', () => openDetail(post));
+                    sermonGrid.appendChild(card);
+                    appended++;
+                } catch (e) {
+                    console.warn('sermon card render error', e);
+                }
+            });
+
+            if (appended === 0) {
+                showEmpty('설교말씀을 표시할 수 없습니다', '유튜브 링크가 올바른지 확인해 주세요.', true);
+            }
+        }
+
+        const detailModal = document.getElementById('detailModal');
+        const detailBackdrop = document.getElementById('detailBackdrop');
+        const detailClose = document.getElementById('detailClose');
+        const detailDate = document.getElementById('detailDate');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailContent = document.getElementById('detailContent');
+        const detailVideoWrap = document.getElementById('detailVideoWrap');
+        const detailVideo = document.getElementById('detailVideo');
+        let currentPost = null;
+
+        function openDetail(post) {
+            currentPost = post;
+            const videoId = extractYouTubeId(post.youtube_url);
+            if (videoId) {
+                detailVideoWrap.classList.remove('hidden');
+                detailVideo.src = getYouTubeEmbedUrl(videoId);
+            } else {
+                detailVideoWrap.classList.add('hidden');
+                detailVideo.removeAttribute('src');
+            }
+            detailDate.textContent = new Date(post.post_date).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            detailTitle.textContent = post.title;
+            detailContent.textContent = post.content || '';
+            detailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeDetail() {
+            detailModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            detailVideo.removeAttribute('src');
+            currentPost = null;
+        }
+
+        detailClose.addEventListener('click', closeDetail);
+        detailBackdrop.addEventListener('click', closeDetail);
+
+        document.getElementById('detailDelete').addEventListener('click', async () => {
+            if (!currentPost || !confirm('정말 삭제하시겠습니까?')) return;
+            const sb = getSupabase();
+            if (!sb) {
+                alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
+            if (!currentAdminPassword) {
+                alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
+            try {
+                const { error } = await sb.rpc('admin_sermon_posts_delete', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(currentPost.id)
+                });
+                if (error) throw error;
+                alert('삭제되었습니다.');
+                closeDetail();
+                loadSermons();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        const detailEdit = document.getElementById('detailEdit');
+        const editModal = document.getElementById('editModal');
+        const editBackdrop = document.getElementById('editBackdrop');
+        const editClose = document.getElementById('editClose');
+        const editCancel = document.getElementById('editCancel');
+        const editForm = document.getElementById('editForm');
+        const editPostId = document.getElementById('editPostId');
+        const editTitle = document.getElementById('editTitle');
+        const editDate = document.getElementById('editDate');
+        const editContent = document.getElementById('editContent');
+        const editYoutubeUrl = document.getElementById('editYoutubeUrl');
+
+        detailEdit.addEventListener('click', () => {
+            if (!currentPost) return;
+            editPostId.value = currentPost.id;
+            editTitle.value = currentPost.title;
+            editDate.value = currentPost.post_date;
+            editContent.value = currentPost.content || '';
+            editYoutubeUrl.value = currentPost.youtube_url || '';
+            closeDetail();
+            editModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        });
+
+        function closeEdit() {
+            editModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        editClose.addEventListener('click', closeEdit);
+        editBackdrop.addEventListener('click', closeEdit);
+        editCancel.addEventListener('click', closeEdit);
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!extractYouTubeId(editYoutubeUrl.value)) {
+                alert('올바른 유튜브 영상 링크를 입력해주세요.');
+                return;
+            }
+            if (!currentAdminPassword) {
+                alert('관리자 인증이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
+            const sb = getSupabase();
+            if (!sb) {
+                alert('데이터베이스 연결을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
+            try {
+                const { error } = await sb.rpc('admin_sermon_posts_update', {
+                    p_admin_password: currentAdminPassword,
+                    p_post_id: String(editPostId.value),
+                    p_title: editTitle.value.trim(),
+                    p_content: editContent.value.trim(),
+                    p_post_date: editDate.value,
+                    p_youtube_url: editYoutubeUrl.value.trim()
+                });
+                if (error) throw error;
+                alert('수정되었습니다.');
+                closeEdit();
+                loadSermons();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetail();
+                closeEdit();
+            }
+        });
+
+        function runInit() {
+            let attempts = 0;
+            const maxAttempts = 25;
+            function tryInit() {
+                if (getSupabase()) {
+                    (async function init() {
+                        await loadSermons();
+                        const params = new URLSearchParams(window.location.search);
+                        const id = params.get('id');
+                        if (id) {
+                            const post = allPosts.find((p) => String(p.id) === id);
+                            if (post) openDetail(post);
+                        }
+                    })();
+                    return;
+                }
+                attempts++;
+                if (attempts < maxAttempts) {
+                    setTimeout(tryInit, 200);
+                } else {
+                    loadSermons();
+                }
+            }
+            tryInit();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+            runInit();
+        }
+        window.addEventListener('pageshow', (e) => { if (e.persisted) loadSermons(); });
+    </script>
+</body>
+</html>
