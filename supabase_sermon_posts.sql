@@ -89,3 +89,6 @@ end;
 $$;
 
 grant execute on function public.admin_sermon_posts_delete(text, text) to anon, authenticated;
+
+-- PostgREST schema cache reload (Supabase API가 새 함수/테이블을 인식하도록)
+notify pgrst, 'reload schema';

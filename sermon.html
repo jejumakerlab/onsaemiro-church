@@ -399,6 +399,15 @@
                 .replace(/"/g, '&quot;');
         }
 
+        function showSermonSetupError(error) {
+            const msg = String(error?.message || error || '');
+            if (msg.includes('sermon_posts') || msg.includes('admin_sermon_posts')) {
+                alert('Supabase에 설교말씀 테이블이 아직 없습니다.\n\nSupabase 대시보드 → SQL Editor에서 supabase_sermon_posts.sql 파일을 실행해 주세요.');
+                return true;
+            }
+            return false;
+        }
+
         lucide.createIcons();
 
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -522,7 +531,7 @@
                 clearFormBtn.click();
                 loadSermons();
             } catch (error) {
-                alert('오류: ' + error.message);
+                if (!showSermonSetupError(error)) alert('오류: ' + error.message);
             }
         });
 
@@ -581,7 +590,16 @@
                 allPosts = posts || [];
                 renderSermons();
             } catch (error) {
-                showEmpty('연결 오류', error.message || '설교말씀을 불러올 수 없습니다.', true);
+                const msg = String(error.message || '');
+                if (msg.includes('sermon_posts') || msg.includes('admin_sermon_posts')) {
+                    showEmpty(
+                        '데이터베이스 설정이 필요합니다',
+                        'Supabase SQL Editor에서 supabase_sermon_posts.sql 파일 내용을 실행한 뒤 다시 시도해 주세요.',
+                        true
+                    );
+                    return;
+                }
+                showEmpty('연결 오류', msg || '설교말씀을 불러올 수 없습니다.', true);
             }
         }
 
@@ -704,7 +722,7 @@
                 closeDetail();
                 loadSermons();
             } catch (error) {
-                alert('오류: ' + error.message);
+                if (!showSermonSetupError(error)) alert('오류: ' + error.message);
             }
         });
 
@@ -771,7 +789,7 @@
                 closeEdit();
                 loadSermons();
             } catch (error) {
-                alert('오류: ' + error.message);
+                if (!showSermonSetupError(error)) alert('오류: ' + error.message);
             }
         });
 
