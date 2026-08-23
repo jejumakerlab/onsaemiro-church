@@ -224,8 +224,8 @@
                         </div>
                         <div>
                             <label for="postYoutubeUrl" class="block text-sm font-medium text-gray-700 mb-2">유튜브 영상 링크 *</label>
-                            <input type="url" id="postYoutubeUrl" required placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
-                            <p class="text-xs text-gray-500 mt-2">youtube.com 또는 youtu.be 링크를 입력하세요.</p>
+                            <input type="text" id="postYoutubeUrl" required placeholder="https://www.youtube.com/watch?v=... 또는 live 링크" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                            <p class="text-xs text-gray-500 mt-2">youtube.com, youtu.be, live 링크 지원. 시작 시점(t=초)이 포함된 링크도 사용할 수 있습니다.</p>
                         </div>
                         <div id="postYoutubePreview" class="hidden rounded-xl overflow-hidden border border-gray-200">
                             <img id="postYoutubePreviewImg" src="" alt="유튜브 썸네일 미리보기" class="w-full aspect-video object-cover">
@@ -319,7 +319,7 @@
                     </div>
                     <div>
                         <label for="editYoutubeUrl" class="block text-sm font-medium text-gray-700 mb-2">유튜브 영상 링크</label>
-                        <input type="url" id="editYoutubeUrl" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
+                        <input type="text" id="editYoutubeUrl" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all">
                     </div>
                     <div>
                         <label for="editContent" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
@@ -369,26 +369,66 @@
             return window._sermonSupabaseClient;
         }
 
-        function extractYouTubeId(url) {
+        function parseYouTubeTime(value) {
+            if (value == null || value === '') return null;
+            const t = String(value).trim();
+            if (/^\d+$/.test(t)) return parseInt(t, 10);
+            let seconds = 0;
+            const h = t.match(/(\d+)h/i);
+            const m = t.match(/(\d+)m/i);
+            const s = t.match(/(\d+)s/i);
+            if (h) seconds += parseInt(h[1], 10) * 3600;
+            if (m) seconds += parseInt(m[1], 10) * 60;
+            if (s) seconds += parseInt(s[1], 10);
+            return seconds > 0 ? seconds : (parseInt(t, 10) || null);
+        }
+
+        function parseYouTubeUrl(url) {
             if (!url) return null;
             const value = String(url).trim();
-            const patterns = [
-                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+            const idPatterns = [
+                /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([a-zA-Z0-9_-]{11})/,
+                /youtu\.be\/([a-zA-Z0-9_-]{11})/,
                 /^([a-zA-Z0-9_-]{11})$/
             ];
-            for (const pattern of patterns) {
+            let videoId = null;
+            for (const pattern of idPatterns) {
                 const match = value.match(pattern);
-                if (match) return match[1];
+                if (match) {
+                    videoId = match[1];
+                    break;
+                }
             }
-            return null;
+            if (!videoId) return null;
+
+            let startSeconds = null;
+            try {
+                const normalized = value.startsWith('http') ? value : 'https://' + value;
+                const urlObj = new URL(normalized);
+                const tParam = urlObj.searchParams.get('t') || urlObj.searchParams.get('start');
+                if (tParam) startSeconds = parseYouTubeTime(tParam);
+            } catch (_) {
+                const tMatch = value.match(/[?&](?:t|start)=([^&]+)/i);
+                if (tMatch) startSeconds = parseYouTubeTime(decodeURIComponent(tMatch[1]));
+            }
+            return { videoId, startSeconds };
+        }
+
+        function extractYouTubeId(url) {
+            const parsed = parseYouTubeUrl(url);
+            return parsed ? parsed.videoId : null;
         }
 
         function getYouTubeThumbnail(videoId) {
             return 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg';
         }
 
-        function getYouTubeEmbedUrl(videoId) {
-            return 'https://www.youtube.com/embed/' + videoId + '?rel=0';
+        function getYouTubeEmbedUrl(videoId, startSeconds) {
+            let embedUrl = 'https://www.youtube.com/embed/' + videoId + '?rel=0';
+            if (startSeconds != null && startSeconds > 0) {
+                embedUrl += '&start=' + startSeconds;
+            }
+            return embedUrl;
         }
 
         function escapeHtml(text) {
@@ -671,10 +711,10 @@
 
         function openDetail(post) {
             currentPost = post;
-            const videoId = extractYouTubeId(post.youtube_url);
-            if (videoId) {
+            const parsed = parseYouTubeUrl(post.youtube_url);
+            if (parsed) {
                 detailVideoWrap.classList.remove('hidden');
-                detailVideo.src = getYouTubeEmbedUrl(videoId);
+                detailVideo.src = getYouTubeEmbedUrl(parsed.videoId, parsed.startSeconds);
             } else {
                 detailVideoWrap.classList.add('hidden');
                 detailVideo.removeAttribute('src');
